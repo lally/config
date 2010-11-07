@@ -1,0 +1,49 @@
+
+** Thu Aug 28 09:27:29 2008 (Give groups stall cycles to catch up on cruft)
+
+Give groups stall cycles to catch up on cruft
+When scheduling multiple work groups, alternate between each one to
+have a 'wait state' where they can go back and clean up the code
+they've written.  Documentation, small bugs, refactors, etc.
+
+/research/phd/writeup/writing.org
+
+** Thu Aug 28 09:44:29 2008 (Let users vote (with points) on what features to add)
+
+Let users vote (with points) on what features to add
+For web-based app dev environment, give each user a vote on what
+feature should be added next.  We can write proposals, as can they.
+The proposals go through the arch review board, which finally gets a
+work item written.  These work items constitute a proportion
+(e.g. half or 3/4ths) of what we add (the remainder intended to add
+new customers vs further satisfy existing ones).  Put it under a
+"community" tab.  Clearly the sharing features will have to have
+community consensus, so we can see what they'd like to share, and what
+they'd like to receive.
+
+/research/phd/writeup/writing.org
+
+** Thu Aug 28 17:35:12 2008 (Scalability objectives, requires the sum or can I do it piec)
+
+Scalability objectives, requires the sum or can I do it piece-wise?
+
+We prioritize the resource requirement elements by largest term
+(e.g. N^2 vs N), and then aim for largest first.  The rest are less
+important.   In DVE terms, worry about ~N^2 elements.
+
+/research/phd/writeup/manual/manual.tex
+
+** Sat Nov  6 21:53:04 2010 (* Reading the buffer)
+
+* Reading the buffer
+  - Just compare the seqno vs last_read_seqno +1 % size, and compare against
+    the index.
+
+* Multithreaded Write
+  - CAS the index.  It's not perfect, but it's the best we got.  The only
+    better option is per-thread buffers.  That may be a necessary second
+    option.  Then we'd need to allocate a group buffer for all threads, but
+    this may get messy.
+
+** Sat Nov  6 21:54:02 2010 ()
+
