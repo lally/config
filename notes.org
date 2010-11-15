@@ -47,3 +47,13 @@ important.   In DVE terms, worry about ~N^2 elements.
 
 ** Sat Nov  6 21:54:02 2010 ()
 
+* Tasks
+** TODO Test 2
+   [2010-11-08 Mon]
+   [[file:~/.emacs]]
+** TODO c
+   [2010-11-08 Mon]
+   [[file:~/.emacs]]
+** TODO C
+   [2010-11-08 Mon]
+   [[file:~/.emacs]]
