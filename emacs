@@ -1,293 +1,202 @@
-;;
-;; Some machine-generated customizations at top.
+(load-file "/home/build/public/eng/elisp/google.el")
+;Some extra local packages are available that are not included by
+;google.el by default. You need to require those modules explicitly if
+;you want their functionality. These include:
 
+(require 'p4-google)                ;; g4-annotate, improves find-file-at-point
+(require 'compilation-colorization) ;; colorizes output of (i)grep
+(require 'rotate-clients)           ;; google-rotate-client
+(require 'rotate-among-files)       ;; google-rotate-among-files
+(require 'googlemenu)               ;; handy Google menu bar
+(require 'google-java)              ;; fast Java compilation code
+(require 'p4-files)                 ;; transparent support for
+                                    ;; Perforce filesystem
+(require 'google3)                  ;; magically set paths for
+                                    ;; compiling google3 code
+(require 'gsearch)                  ;; Search the whole Google code base.
+
+;; Locally added - http://www.corp.google.com/eng/google_emacs.html
+(add-to-list 'load-path "~/.emacs.d/site-lisp")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/icicles")
+(add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
+(require 'googlemenu)
+(require 'dired-details+)
+(require 'dired-x)
+(require 'column-marker)
+(require 'fic-mode)
+(require 'magit)
+(autoload 'pymacs-apply "pymacs")
+(autoload 'pymacs-call "pymacs")
+(autoload 'pymacs-eval "pymacs" nil t)
+(autoload 'pymacs-exec "pymacs" nil t)
+(autoload 'pymacs-load "pymacs" nil t)
+
+(load-file "~/.emacs.d/site-lisp/cedet-1.0/common/cedet.elc")
+;(require 'light-symbol)
+(fringe-mode 'minimal)
+(add-hook 'c++-mode-hook 'turn-on-fic-mode)
+(add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
+(defun my-py-mode-hook()
+  (interactive)
+  (c-subword-mode 1)
+  (turn-on-fic-mode)
+  (hs-minor-mode)
+  (column-number-mode 1)
+  (column-marker-1 79)
+)
+(add-hook 'py-mode-hook 'my-py-mode-hook)
+(global-ede-mode 1)                      ; Enable the Project management system
+(semantic-load-enable-code-helpers)      ; Enable prototype help and
+                                         ; smart completion
+(global-srecode-minor-mode 1)            ; Enable template insertion menu
+
+;(add-hook 'python-mode-hook 'turn-on-fic-mode)
+
+
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 4)
+
+(setq dired-omit-files
+      (rx (or (seq bol (? ".") "#")         ;; emacs autosave files
+              (seq bol "." (not (any "."))) ;; dot-files
+              (seq "~" eol)                 ;; backup-files
+              (seq bol "CVS" eol)           ;; CVS dirs
+              )))
+(setq dired-omit-extensions
+      (append dired-latex-unclean-extensions
+              dired-bibtex-unclean-extensions
+              dired-texinfo-unclean-extensions))
+(add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+(column-marker-1 78)
+
+(p4-enable-file-name-handler)
+(server-start)
+(display-time-mode)
+(global-set-key [f12] 'google-compile)
+;(global-set-key (kbd "RET") 'newline-and-indent)
+(global-set-key (kbd "C-c C-h") 'hs-toggle-hiding)
+(set-variable 'comint-prompt-read-only 't)
+
+(setq cc-other-file-alist
+      `(("\\cpp$" (".hpp" ".h"))
+        ("\\.h$" (".c" ".cpp" ".cc"))
+        ("\\.hpp$" (".c" ".cpp" ".cc"))))
+
+(global-set-key (kbd "C-c o") 'ff-find-other-file)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; General Window Setup
+;;
+
+;
+; Normal configuration stuff
+(scroll-bar-mode 'nil)
+(tool-bar-mode 'nil)
+(transient-mark-mode t)
+
+(setq p4-use-p4config-exclusively t)
+(ido-mode t)
+(set-fringe-mode '(1 . 1))
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(fringe-mode 0 nil (fringe))
- '(inhibit-startup-screen t)
- '(jde-jdk-registry (quote (("1.6.0" . "/usr/jdk/instances/jdk1.6.0"))))
- '(org-agenda-files (list "/research/phd/planning.org" "/research/phd/torque/modeling.org" "~/public_html/blog.org" "/research/phd/researchdef/writing.org" "~/Work/School/DVEs/dve_course.org" "/research/phd/pubs.org"))
- '(org-enable-table-editor (quote optimized))
- '(org-export-latex-classes (quote (("vgtc" "\\documentclass{vgtc}
-\\usepackage{mathptmx}
-\\usepackage{graphicx}
-\\usepackage{times}
-\\onlineid{0}
-\\vgtccategory{Research}
-\\vgtcinsertpkg" ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}") ("\\subsubsection{%s}" . "\\subsubsection*{%s}") ("\\paragraph{%s}" . "\\paragraph*{%s}") ("\\subparagraph{%s}" . "\\subparagraph*{%s}")) ("article" "\\documentclass[11pt,a4paper]{article}
-\\usepackage[utf8]{inputenc}
-\\usepackage[T1]{fontenc}
-\\usepackage{hyperref}" ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}") ("\\subsubsection{%s}" . "\\subsubsection*{%s}") ("\\paragraph{%s}" . "\\paragraph*{%s}") ("\\subparagraph{%s}" . "\\subparagraph*{%s}")) ("report" "\\documentclass[11pt,a4paper]{report}
-\\usepackage[utf8]{inputenc}
-\\usepackage[T1]{fontenc}
-\\usepackage{hyperref}" ("\\part{%s}" . "\\part*{%s}") ("\\chapter{%s}" . "\\chapter*{%s}") ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}") ("\\subsubsection{%s}" . "\\subsubsection*{%s}")) ("book" "\\documentclass[11pt,a4paper]{book}
-\\usepackage[utf8]{inputenc}
-\\usepackage[T1]{fontenc}
-\\usepackage{hyperref}" ("\\part{%s}" . "\\part*{%s}") ("\\chapter{%s}" . "\\chapter*{%s}") ("\\section{%s}" . "\\section*{%s}") ("\\subsection{%s}" . "\\subsection*{%s}") ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))))
- '(org-hide-leading-stars t)
- '(pr-print-using-ghostscript t)
- '(safe-local-variable-values (quote ((py-indent-offset . 4) (TeX-master . "../index") (TeX-master . t)))))
+ '(color-theme-selection "Black" nil (color-theme))
+ '(display-time-mode t)
+ '(ido-default-buffer-method (quote selected-window))
+ '(ido-default-file-method (quote selected-window) t)
+ '(menu-bar-mode t)
+ ;; C-cX for X in [p,t] will enable the right template.
+ '(org-capture-templates
+   (quote (("p" "Python" entry (file "~/config/notes.org") "py: ")
+           ("t" "TODO" entry (file "~/config/notes.org") "TODO ")))))
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 80 :width normal :foundry "unknown" :family "Droid Sans Mono"))))
- '(font-lock-builtin-face ((t (:foreground "ForestGreen" :background "Black"))))
- '(font-lock-comment-face ((t (:foreground "Yellow" :background "Black"))))
- '(font-lock-constant-face ((t (:foreground "LightGray" :background "Black"))))
- '(font-lock-default-face ((t (:foreground "White" :background "Black"))))
- '(font-lock-function-name-face ((t (:foreground "Red" :background "Black"))))
- '(font-lock-keyword-face ((t (:foreground "Gold" :background "Black"))))
- '(font-lock-negation-char-face ((t (:weight extra-bold))))
- '(font-lock-string-face ((t (:foreground "LimeGreen" :background "Black"))))
- '(font-lock-type-face ((t (:foreground "Red" :background "Black"))))
- '(font-lock-variable-name-face ((t (:foreground "SteelBlue" :background "Black"))))
- '(font-lock-warning-face ((t (:foreground "White" :background "Firebrick"))))
- '(region ((nil (:background "dark olive green"))))
- '(twit-author-face ((t (:weight bold :height 0.8 :family "fixed"))))
- '(twit-message-face ((default (:height 0.8 :family "fixed")) (nil nil)))
- '(twit-title-face ((t (:underline "DeepSkyBlue"))))
- '(twit-zebra-1-face ((t (:background "black"))))
- '(twit-zebra-2-face ((t (:background "dark olive green")))))
+ '(default ((t (:inherit nil :stipple nil :background "black"
+                :foreground "white" :inverse-video nil :box nil
+                :strike-through nil :overline nil :underline nil
+                :slant normal :weight normal :height 69 :width normal
+                :foundry "unknown" :family "Droid Sans Mono")))))
 
-;;----------------------------------------------------------------------
-;; GLOBAL Settings
-;;----------------------------------------------------------------------
-
-;; Always enable server mode
-(server-mode 't)
-(tool-bar-mode nil)
-
-;; Fix the UI: scrollbars.
-;(setq scroll-bar-mode-explicit t)
-(setq comint-prompt-read-only t)
-(set-scroll-bar-mode `nil)
-;; colors
-(set-foreground-color "white")
 (set-background-color "black")
-;; font
-;(set-default-font
-; "-*-profont-medium-r-normal--11-110-72-72-c-60-iso8859-1")
- ;(set-default-font
- ; "-misc-dejavu sans mono-medium-r-normal--10-100-72-72-m-60-iso8859-1")
-; turn off blinking and beeping
-(setq ring-bell-function 'ignore)
+(set-foreground-color "white")
+(set-face-background 'region "midnight blue")
+;(global-set-key [?\M-.] 'gtags-feeling-lucky)
+(global-set-key [?\M-.] 'gtags-show-tag-locations)
+(global-set-key [M-*] 'gtags-pop-tag)
+
+;(semantic-enable-gaudy-code-helpers)
 
 
-;; Emacs base bindings
-(global-set-key "\r" 'newline-and-indent)
-(global-set-key [f21] 'keyboard-quit)
-(global-set-key [f22] 'goto-line)
-(global-set-key "\C-\\" 'comment-or-uncomment-region)
-(global-set-key (kbd "C-c C-h") 'hs-toggle-hiding)
-(global-set-key (kbd "C-c o") 'ff-find-other-file)
-(global-set-key (kbd "M-k") 'manual-entry)
+;; Yummy, from: http://stringofbits.net/2009/08/emacs-23-dbus-and-libnotify/
+(require 'dbus)
+(defun send-desktop-notification (summary body timeout)
+  "call notification-daemon method METHOD with ARGS over dbus"
+  (dbus-call-method
+    :session                        ; use the session (not system) bus
+    "org.freedesktop.Notifications" ; service name
+    "/org/freedesktop/Notifications"   ; path name
+    "org.freedesktop.Notifications" "Notify" ; Method
+    "emacs"
+    0
+    "/usr/share/icons/hicolor/scalable/apps/emacs23.svg"
+    summary
+    body
+    '(:array)
+    '(:array :signature "{sv}")
+    ':int32 timeout))
 
-;; forward & backward window controls
-(defun other-window-backward ()
-  "Select the previous window."
-  (interactive)
-  (other-window -1))
+(defun pw/compile-notify (buffer message)
+  (send-desktop-notification "emacs compile" message 30000))
 
-;(global-set-key [SunF36] 'other-window-backward)
-;(global-set-key [SunF37] 'other-window)
+(setq compilation-finish-function 'pw/compile-notify)
+(semantic-load-enable-gaudy-code-helpers)
+;(require 'icicles)
+;(require 'fuzzy-match)
+;(icy-mode 1)
+(put 'narrow-to-region 'disabled nil)
+;(set-variable 'icicle-show-Completions-initially t)
+(set-variable 'mouse-autoselect-window t)
+;(icicle-ido-like-mode 1)
+(setq-default ido-default-file-method 'selected-window)
+(setq-default display-buffer-reuse-frames 1)
+(set-fill-column 77)
+(column-marker-1 79)
+(global-font-lock-mode 1)
 
-;; Just undo a filled region, in case I have to let some other program
-;; refill it later.
-;; Note to self: apparently there's a longlines-mode which may
-;; obviate the need for this.
-(defun unfill-region (begin end)
-  "Remove all linebreaks in a region but leave paragraphs, 
-  indented text (quotes,code) and lines starting with an asterix (lists) intakt."
-  (interactive "r")
-  (replace-regexp "\\([^\n]\\)\n\\([^ *\n]\\)" "\\1 \\2" nil begin end))
-
-(set-face-background 'modeline          "grey30")
-(set-face-background 'modeline-inactive "grey0")
-(set-cursor-color "white")
-(set-mouse-color "white")
-
-(defun setup-frame (frame)
-  (set-face-background 'modeline          "grey30")
-  (set-face-background 'modeline-inactive "grey0")
-  (set-face-background 'region "dark slate gray")
-  (set-cursor-color "white")
-  (set-mouse-color "white")
-  (modify-frame-parameters frame '(
-		   (background-color . "black")
-		   (foreground-color . "white")
-;		   (font . "-*-profont-medium-r-normal--12-120-72-72-c-60-iso8859-1")
-		   )
-	   )
-  )
-(add-hook 'after-make-frame-functions 'setup-frame)
-
-;; Aliases.
-(defalias 'qrr 'query-replace-regexp)
-(defalias 'rr 'replace-regexp)
-(defalias 'cr 'comment-region)
-(defalias 'er 'eval-region)
-
-;;----------------------------------------------------------------------
-;; DTRACE support.
-;;----------------------------------------------------------------------
-
-(autoload 'd-mode "d-mode" () t)
-(add-to-list 'auto-mode-alist '("\\.d\\'" . d-mode))
-(add-hook 'd-mode-hook 'imenu-add-menubar-index)
-(add-hook 'd-mode-hook 'font-lock-mode)
+;
+; GIT SETUP
+; https://wiki.corp.google.com/twiki/bin/view/Nonconf/GitAndEmacs
+(global-auto-revert-mode)
+(global-set-key [S-f12] 'magit-status)
 
 
-;;----------------------------------------------------------------------
-;; ORG MODE SETUP
-;;----------------------------------------------------------------------
-
-;; The following lines are always needed.  Choose your own keys.
+;
+; ORG MODE SETUP
+;
+(require 'org-install)
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(global-set-key (kbd "C-c l") 'org-store-link)
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c b") 'org-iswitchb)
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-iswitchb)
+(global-set-key "\C-ct" 'org-time-stamp)
+(set-variable 'org-hide-leading-stars t)
+(setq org-default-notes-file "~/config/notes.org")
+(define-key global-map "\C-cr" 'org-capture) ; 'r' for remember.
+(global-set-key "\M-\C-\\" 'comment-region)
+(global-set-key [C-tab] 'indent-region)
+(global-hl-line-mode 1)
+(set-face-background 'hl-line "#330")
 
-(global-font-lock-mode 1)                     ; for all buffers
-;(add-hook 'org-mode-hook 'turn-on-font-lock)  ; Org buffers only
-;(add-hook 'org-mode-hook 'turn-on-auto-fill)
-(add-hook 'org-mode-hook
-   (lambda()
-     (turn-on-font-lock)
-     (turn-on-auto-fill)))
+; g13-support
 
-; Setup some Org-mode agenda files.
-(setq org-agenda-files (list "/research/phd/planning.org"
-			     "/research/phd/torque/modeling.org"
-		             "~/public_html/blog.org" 
-			     "/research/phd/researchdef/writing.org"
-			     "/research/phd/pubs.org"))
+(defun filename-of-path (n)
+  (last (split-string n "/" 't)))
 
-;;----------------------------------------------------------------------
-;; LATEX
-;;----------------------------------------------------------------------
-
-(add-hook 'LaTeX-mode-hook
-   (lambda()
-     (turn-on-font-lock)
-     (turn-on-auto-fill)))
-
-;(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-;(add-hook 'LaTeX-mode-hook 'turn-on-font-lock)
-(global-set-key [(control \})] 'tex-close-latex-block)
-
-;;---------------------------------------------------------------------- 
-;; Haskell mode
-;;----------------------------------------------------------------------
-
-(load "~/local/haskell-mode-2.4/haskell-site-file")
-(load "~/local/share/emacs/site-lisp/twit.el")
-(add-hook 'haskell-mode-hook
-	  (lambda()
-	    (turn-on-haskell-doc-mode t)
-	    (turn-on-haskell-simple-indent t)
-	    (turn-on-font-lock t)
-	    (imenu-add-menubar-index t)))
-
-;(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
-;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
-;(add-hook 'haskell-mode-hook 'font-lock-mode)
-;(add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
-
-;;----------------------------------------------------------------------
-;; C/C++ Mode
-;;----------------------------------------------------------------------
-
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-hook 'c-mode-common-hook
-  (lambda()
-    (local-set-key (kbd "C-c <right>") 'hs-show-block)
-    (local-set-key (kbd "C-c <left>")  'hs-hide-block)
-    (local-set-key (kbd "C-c <up>")    'hs-hide-all)
-    (local-set-key (kbd "C-c <down>")  'hs-show-all)
-    (local-set-key (kbd "<f23>") 'hs-toggle-hiding)
-    (set-variable 'tab-width 4)
-    (set-variable 'c-basic-offset 4)
-    (turn-on-auto-fill)
-    (hs-minor-mode t)
-    (flyspell-prog-mode)
-    ))
-
-
-;;----------------------------------------------------------------------
-;; CEDET, for the Java dev environment.
-;;----------------------------------------------------------------------
-
-(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/jde/lisp"))
-(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/elib"))
-(load-file (expand-file-name "/opt/local/share/emacs/site-lisp/magit.el"))
-(load-file (expand-file-name "~/.emacs.d/plugins/psvn.el"))
-
-;; Load CEDET
-(load-file "/opt/local/share/emacs/site-lisp/cedet/common/cedet.el")
-
-;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
-;; * This turns on which-func support (Plus all other code helpers)
-;;(semantic-load-enable-minimum-features)
-;(semantic-load-enable-code-helpers)
-;(semantic-load-enable-guady-code-helpers)
-(semantic-load-enable-excessive-code-helpers)
-
-;; enable JDE. 
-;(require 'jde)
-(require 'magit)
-
-;; IDO, for my enhanced buffer management.
-(require 'ido)
-(ido-mode t)
-
-;; MAGIT, for GIT support.
-(require 'magit)
-
-(global-set-key [f5] 'magit-status)
-
-;;; Emacs/W3 Configuration
-(setq load-path (cons "/opt/emacs/share/emacs/site-lisp" load-path))
-(condition-case () (require 'w3-auto "w3-auto") (error nil))
-
-;; Midnight mode, a GC for unused buffers.
-(require 'midnight)
-
-
-;; Shove the function name at the top of the buffer, in the 'HeaderLine'
-;;(load "which-func")
-;;(which-func-mode 1)
-
-;;(delete (assoc 'which-func-mode mode-line-format) mode-line-format)
-;;(setq which-func-header-line-format
-;;              '(which-func-mode
-;;                ("" which-func-format
-;;                 )))
-;(defadvice which-func-ff-hook (after header-line activate)
-;  (when which-func-mode
-;    (delete (assoc 'which-func-mode mode-line-format) mode-line-format)
-;    (setq header-line-format which-func-header-line-format)))
-
-;;==================================================================
-;; Fullscreen support
-;;==================================================================
-
-(defun toggle-fullscreen (&optional f)
-  (interactive)
-  (let ((current-value (frame-parameter nil 'fullscreen)))
-    (set-frame-parameter nil 'fullscreen
-			 (if (equal 'fullboth current-value)
-			     (if (boundp 'old-fullscreen) old-fullscreen nil)
-			   (progn (setq old-fullscreen current-value)
-				  'fullboth)))))
-
-(global-set-key [SunF36] 'toggle-fullscreen)
-(global-set-key [SunF37] 'menu-bar-mode)
-
-(set-variable 'mouse-autoselect-window 1)
+(global-set-key "\C-\M-g" 'goto-line)
