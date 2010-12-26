@@ -291,3 +291,11 @@
 (global-set-key [SunF37] 'menu-bar-mode)
 
 (set-variable 'mouse-autoselect-window 1)
+
+
+;; ORG Capture
+(setq org-directory "~/config")
+(setq org-default-notes-file (concat org-directory "/notes.org"))
+(define-key global-map "\C-cc" 'org-remember)
+
+(setq ido-max-directory-size 100000)
