@@ -1,37 +1,151 @@
-(load-file "/home/build/public/eng/elisp/google.el")
-;Some extra local packages are available that are not included by
-;google.el by default. You need to require those modules explicitly if
-;you want their functionality. These include:
+(defvar *aquamacs-p* (boundp 'aquamacs-version))
 
-(require 'p4-google)                ;; g4-annotate, improves find-file-at-point
-(require 'compilation-colorization) ;; colorizes output of (i)grep
-(require 'rotate-clients)           ;; google-rotate-client
-(require 'rotate-among-files)       ;; google-rotate-among-files
-(require 'googlemenu)               ;; handy Google menu bar
-(require 'google-java)              ;; fast Java compilation code
-(require 'p4-files)                 ;; transparent support for
-                                    ;; Perforce filesystem
-(require 'google3)                  ;; magically set paths for
-                                    ;; compiling google3 code
-(require 'gsearch)                  ;; Search the whole Google code base.
+(when *aquamacs-p*
+  (progn
+    (osx-key-mode -1) 
+    (unless window-system   ;; in TTY (terminal) modee
+      (normal-erase-is-backspace-mode nil)
+      (set-face-inverse-video-p 'mode-line-inactive t)
+      (define-key osx-key-mode-map "\C-z" 'suspend-emacs))
+ 
+    (setq
+     ns-command-modifier 'meta         ; Apple/Command key is Meta
+     ns-alternate-modifier nil         ; Option is the Mac Option key
+     ns-use-mac-modifier-symbols  nil  ; display standard Emacs (and not standard Mac) modifier symbols)
+     )
+ 
+    ;; Persistency and modes:
+    (setq
+     initial-major-mode 'emacs-lisp-mode              ; *scratch* shows up in emacs-lisp-mode
+     ;; aquamacs-default-major-mode 'emacs-lisp-mode  ; new buffers open in emacs-lisp-mode
+     )
+ 
+    ; Frame and window management:
+    (ido-mode 1)
+    (tabbar-mode -1)		     ; no tabbar
+    (one-buffer-one-frame-mode -1)       ; no one-buffer-per-frame
+    (setq special-display-regexps nil)   ; do not open certain buffers in special windows/frames
+    ; (tool-bar-mode 0) ; turn off toolbar
+    ; (scroll-bar-mode -1)  ; no scrollbars
+    ;; Appearance
+    (aquamacs-autoface-mode -1) ; no mode-specific faces, everything in Monaco
+    )
+)
+
+(when (file-accessible-directory-p "/home/build")
+  (progn 
+    (load-file "/home/build/public/eng/elisp/google.el")
+	 ;Some extra local packages are available that are not included by
+	 ;google.el by default. You need to require those modules explicitly if
+	 ;you want their functionality. These include:
+
+    (require 'p4-google)                ;; g4-annotate, improves find-file-at-point
+    (require 'compilation-colorization) ;; colorizes output of (i)grep
+    (require 'rotate-clients)           ;; google-rotate-client
+    (require 'rotate-among-files)       ;; google-rotate-among-files
+    (require 'googlemenu)               ;; handy Google menu bar
+    (require 'google-java)              ;; fast Java compilation code
+    (require 'p4-files)                 ;; transparent support for
+    ;; Perforce filesystem
+    (require 'google3)                  ;; magically set paths for
+    ;; compiling google3 code
+    (require 'gsearch)                  ;; Search the whole Google code base.
+    (require 'googlemenu)
+    (add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
+    (p4-enable-file-name-handler)
+    (global-set-key [f12] 'google-compile)
+    (setq p4-use-p4config-exclusively t)
+    (load-file "~/.emacs.d/site-lisp/cedet-1.0/common/cedet.elc")
+;;----------------------------------------------------------------------
+;; CEDET, for the Java dev environment.
+;;----------------------------------------------------------------------
+
+(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/jde/lisp"))
+(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/elib"))
+(load-file (expand-file-name "/opt/local/share/emacs/site-lisp/magit.el"))
+(load-file (expand-file-name "~/.emacs.d/plugins/psvn.el"))
+
+;; Load CEDET
+(load-file "/opt/local/share/emacs/site-lisp/cedet/common/cedet.el")
+
+;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
+;; * This turns on which-func support (Plus all other code helpers)
+;;(semantic-load-enable-minimum-features)
+;(semantic-load-enable-code-helpers)
+;(semantic-load-enable-guady-code-helpers)
+(semantic-load-enable-excessive-code-helpers)
+;(semantic-load-enable-gaudy-code-helpers)
+
+;; enable JDE. 
+;(require 'jde)
+(require 'magit)
+
+;; IDO, for my enhanced buffer management.
+(require 'ido)
+(ido-mode t)
+(global-ede-mode 1)                      ; Enable the Project management system
+(semantic-load-enable-code-helpers)      ; Enable prototype help and
+                                         ; smart completion
+(global-srecode-minor-mode 1)            ; Enable template insertion menu
+
+;; MAGIT, for GIT support.
+(require 'magit)
+
+(global-set-key [f5] 'magit-status)
+
+;;; Emacs/W3 Configuration
+(setq load-path (cons "/opt/emacs/share/emacs/site-lisp" load-path))
+(condition-case () (require 'w3-auto "w3-auto") (error nil))
+;;---------------------------------------------------------------------- 
+;; Haskell mode
+;;----------------------------------------------------------------------
+
+(load "~/local/haskell-mode-2.4/haskell-site-file")
+;(load "~/local/share/emacs/site-lisp/twit.el")
+(add-hook 'haskell-mode-hook
+	  (lambda()
+	    (turn-on-haskell-doc-mode t)
+	    (turn-on-haskell-simple-indent t)
+	    (turn-on-font-lock t)
+	    (imenu-add-menubar-index t)))
+
+(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
+(add-hook 'haskell-mode-hook 'font-lock-mode)
+(add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "black"
+                :foreground "white" :inverse-video nil :box nil
+                :strike-through nil :overline nil :underline nil
+                :slant normal :weight normal :height 69 :width normal
+                :foundry "unknown" :family "Droid Sans Mono")))))
+
+    )
+  )
+
+;;
+;; END HOST-SPECIFIC MODIFICATIONS
 
 ;; Locally added - http://www.corp.google.com/eng/google_emacs.html
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
-(add-to-list 'load-path "~/.emacs.d/site-lisp/icicles")
-(add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
-(require 'googlemenu)
+(add-to-list 'load-path "~/config/libs/site-lisp")
+
 (require 'dired-details+)
 (require 'dired-x)
 (require 'column-marker)
 (require 'fic-mode)
-(require 'magit)
+;(require 'magit)
 (autoload 'pymacs-apply "pymacs")
 (autoload 'pymacs-call "pymacs")
 (autoload 'pymacs-eval "pymacs" nil t)
 (autoload 'pymacs-exec "pymacs" nil t)
 (autoload 'pymacs-load "pymacs" nil t)
 
-(load-file "~/.emacs.d/site-lisp/cedet-1.0/common/cedet.elc")
 ;(require 'light-symbol)
 (fringe-mode 'minimal)
 (add-hook 'c++-mode-hook 'turn-on-fic-mode)
@@ -45,10 +159,6 @@
   (column-marker-1 79)
 )
 (add-hook 'py-mode-hook 'my-py-mode-hook)
-(global-ede-mode 1)                      ; Enable the Project management system
-(semantic-load-enable-code-helpers)      ; Enable prototype help and
-                                         ; smart completion
-(global-srecode-minor-mode 1)            ; Enable template insertion menu
 
 ;(add-hook 'python-mode-hook 'turn-on-fic-mode)
 
@@ -69,10 +179,8 @@
 (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
 (column-marker-1 78)
 
-(p4-enable-file-name-handler)
 (server-start)
 (display-time-mode)
-(global-set-key [f12] 'google-compile)
 ;(global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "C-c C-h") 'hs-toggle-hiding)
 (set-variable 'comint-prompt-read-only 't)
@@ -95,7 +203,6 @@
 (tool-bar-mode 'nil)
 (transient-mark-mode t)
 
-(setq p4-use-p4config-exclusively t)
 (ido-mode t)
 (set-fringe-mode '(1 . 1))
 (custom-set-variables
@@ -113,20 +220,10 @@
    (quote (("p" "Python" entry (file "~/config/notes.org") "py: ")
            ("t" "TODO" entry (file "~/config/notes.org") "TODO ")))))
 
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black"
-                :foreground "white" :inverse-video nil :box nil
-                :strike-through nil :overline nil :underline nil
-                :slant normal :weight normal :height 69 :width normal
-                :foundry "unknown" :family "Droid Sans Mono")))))
-
 (set-background-color "black")
 (set-foreground-color "white")
 (set-face-background 'region "midnight blue")
+(set-face-background 'highlight "grey15")
 ;(global-set-key [?\M-.] 'gtags-feeling-lucky)
 (global-set-key [?\M-.] 'gtags-show-tag-locations)
 (global-set-key [M-*] 'gtags-pop-tag)
@@ -156,7 +253,6 @@
   (send-desktop-notification "emacs compile" message 30000))
 
 (setq compilation-finish-function 'pw/compile-notify)
-(semantic-load-enable-gaudy-code-helpers)
 ;(require 'icicles)
 ;(require 'fuzzy-match)
 ;(icy-mode 1)
@@ -210,24 +306,6 @@
 ;(add-hook 'LaTeX-mode-hook 'turn-on-font-lock)
 (global-set-key [(control \})] 'tex-close-latex-block)
 
-;;---------------------------------------------------------------------- 
-;; Haskell mode
-;;----------------------------------------------------------------------
-
-(load "~/local/haskell-mode-2.4/haskell-site-file")
-(load "~/local/share/emacs/site-lisp/twit.el")
-(add-hook 'haskell-mode-hook
-	  (lambda()
-	    (turn-on-haskell-doc-mode t)
-	    (turn-on-haskell-simple-indent t)
-	    (turn-on-font-lock t)
-	    (imenu-add-menubar-index t)))
-
-;(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
-;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
-;(add-hook 'haskell-mode-hook 'font-lock-mode)
-;(add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
 
 ;;----------------------------------------------------------------------
 ;; C/C++ Mode
@@ -249,41 +327,6 @@
     ))
 
 
-;;----------------------------------------------------------------------
-;; CEDET, for the Java dev environment.
-;;----------------------------------------------------------------------
-
-(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/jde/lisp"))
-(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/elib"))
-(load-file (expand-file-name "/opt/local/share/emacs/site-lisp/magit.el"))
-(load-file (expand-file-name "~/.emacs.d/plugins/psvn.el"))
-
-;; Load CEDET
-(load-file "/opt/local/share/emacs/site-lisp/cedet/common/cedet.el")
-
-;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
-;; * This turns on which-func support (Plus all other code helpers)
-;;(semantic-load-enable-minimum-features)
-;(semantic-load-enable-code-helpers)
-;(semantic-load-enable-guady-code-helpers)
-(semantic-load-enable-excessive-code-helpers)
-
-;; enable JDE. 
-;(require 'jde)
-(require 'magit)
-
-;; IDO, for my enhanced buffer management.
-(require 'ido)
-(ido-mode t)
-
-;; MAGIT, for GIT support.
-(require 'magit)
-
-(global-set-key [f5] 'magit-status)
-
-;;; Emacs/W3 Configuration
-(setq load-path (cons "/opt/emacs/share/emacs/site-lisp" load-path))
-(condition-case () (require 'w3-auto "w3-auto") (error nil))
 
 ;; Midnight mode, a GC for unused buffers.
 (require 'midnight)
@@ -346,3 +389,4 @@
   (last (split-string n "/" 't)))
 
 (global-set-key "\C-\M-g" 'goto-line)
+
