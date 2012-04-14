@@ -9,12 +9,9 @@
 --
 
 import XMonad
-import Control.OldException(catchDyn,try)
+-- import Control.OldException(catchDyn,try)
 import Data.Monoid
 import System.Exit
-import DBus
-import DBus.Connection
-import DBus.Message
     
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
@@ -22,6 +19,7 @@ import XMonad.Util.EZConfig
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
+import XMonad.Layout.NoBorders
 import XMonad.Layout.ThreeColumns
     
 import qualified XMonad.StackSet as W
@@ -38,7 +36,7 @@ myFocusFollowsMouse = True
 
 -- Width of the window border in pixels.
 --
-myBorderWidth   = 1
+myBorderWidth   = 4
 
 -- modMask lets you specify which modkey you want to use. The default
 -- is mod1Mask ("left alt").  You may also consider using mod3Mask
@@ -60,8 +58,15 @@ myWorkspaces    = ["emacs","doc","term","goog","5","6","7","8","music"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
-myNormalBorderColor  = "#dddddd"
-myFocusedBorderColor = "#ff0000"
+myNormalBorderColor  = "#0c141f"
+myFocusedBorderColor = "#df740c"
+
+-- Palette
+-- "#df740c" - orange
+-- "#ffe64d" -- blue
+-- E6FFFF - Pane
+-- 6FC3DF - Cyan
+-- 0C141F -- background
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -72,7 +77,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
     -- launch dmenu
-    , ((modm .|. shiftMask, xK_r     ), spawn "exe=`dmenu_path | dmenu` && eval \"exec $exe\"")
+--    , ((modm .|. shiftMask, xK_r     ), spawn "exe=`dmenu_path | dmenu` && eval \"exec $exe\"")
 
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
@@ -191,7 +196,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = tiled ||| Mirror tiled ||| Full ||| ThreeCol 1 (3/100) (1/2)
+myLayout = tiled ||| Mirror tiled ||| noBorders Full ||| ThreeCol 1 (3/100) (1/2)
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
@@ -229,16 +234,6 @@ myManageHook = composeAll
     , isFullscreen --> doFullFloat ]
 
 
-myPrettyPrinter :: Connection -> PP
-myPrettyPrinter dbus = defaultPP {
-    ppOutput  = outputThroughDBus dbus
-  , ppTitle   = pangoColor "#003366" . shorten 50 . pangoSanitize
-  , ppCurrent = pangoColor "#006666" . wrap "[" "]" . pangoSanitize
-  , ppVisible = pangoColor "#663366" . wrap "(" ")" . pangoSanitize
-  , ppHidden  = wrap " " " "
-  , ppUrgent  = pangoColor "red"
-  }
-
 managementHooks :: [ManageHook]
 managementHooks = [
     resource  =? "Do"        --> doIgnore
@@ -250,38 +245,38 @@ managementHooks = [
 
 -- This retry is really awkward, but sometimes DBus won't let us get our
 -- name unless we retry a couple times.
-getWellKnownName :: Connection -> IO ()
-getWellKnownName dbus = tryGetName `catchDyn` (\ (DBus.Error _ _) ->
-                                                getWellKnownName dbus)
- where
-  tryGetName = do
-    namereq <- newMethodCall serviceDBus pathDBus interfaceDBus "RequestName"
-    addArgs namereq [String "org.xmonad.Log", Word32 5]
-    sendWithReplyAndBlock dbus namereq 0
-    return ()
+-- getWellKnownName :: Connection -> IO ()
+-- getWellKnownName dbus = tryGetName `catchDyn` (\ (DBus.Error _ _) ->
+--                                                 getWellKnownName dbus)
+--  where
+--   tryGetName = do
+--     namereq <- newMethodCall serviceDBus pathDBus interfaceDBus "RequestName"
+--     addArgs namereq [String "org.xmonad.Log", Word32 5]
+--     sendWithReplyAndBlock dbus namereq 0
+--     return ()
 
-outputThroughDBus :: Connection -> String -> IO ()
-outputThroughDBus dbus str = do
-  let str' = "<span font=\"Terminus 9 Bold\">" ++ str ++ "</span>"
-  msg <- newSignal "/org/xmonad/Log" "org.xmonad.Log" "Update"
-  addArgs msg [String str']
-  send dbus msg 0 `catchDyn` (\ (DBus.Error _ _ ) -> return 0)
-  return ()
+-- outputThroughDBus :: Connection -> String -> IO ()
+-- outputThroughDBus dbus str = do
+--   let str' = "<span font=\"Terminus 9 Bold\">" ++ str ++ "</span>"
+--   msg <- newSignal "/org/xmonad/Log" "org.xmonad.Log" "Update"
+--   addArgs msg [String str']
+--   send dbus msg 0 `catchDyn` (\ (DBus.Error _ _ ) -> return 0)
+--   return ()
 
-pangoColor :: String -> String -> String
-pangoColor fg = wrap left right
- where
-  left  = "<span foreground=\"" ++ fg ++ "\">"
-  right = "</span>"
+-- pangoColor :: String -> String -> String
+-- pangoColor fg = wrap left right
+--  where
+--   left  = "<span foreground=\"" ++ fg ++ "\">"
+--   right = "</span>"
 
-pangoSanitize :: String -> String
-pangoSanitize = foldr sanitize ""
- where
-  sanitize '>'  acc = "&gt;" ++ acc
-  sanitize '<'  acc = "&lt;" ++ acc
-  sanitize '\"' acc = "&quot;" ++ acc
-  sanitize '&'  acc = "&amp;" ++ acc
-  sanitize x    acc = x:acc
+-- pangoSanitize :: String -> String
+-- pangoSanitize = foldr sanitize ""
+--  where
+--   sanitize '>'  acc = "&gt;" ++ acc
+--   sanitize '<'  acc = "&lt;" ++ acc
+--   sanitize '\"' acc = "&quot;" ++ acc
+--   sanitize '&'  acc = "&amp;" ++ acc
+--   sanitize x    acc = x:acc
 
 
 ------------------------------------------------------------------------
@@ -318,8 +313,8 @@ myStartupHook = return ()
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
-main = withConnection Session $ \ dbus -> do
-         getWellKnownName dbus
+main = --withConnection Session $ \ dbus -> do
+--         getWellKnownName dbus
          xmonad gnomeConfig {
       -- simple stuff
         terminal           = myTerminal,
@@ -338,7 +333,7 @@ main = withConnection Session $ \ dbus -> do
         layoutHook         = desktopLayoutModifiers (myLayout), 
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
-        logHook            = dynamicLogWithPP (myPrettyPrinter dbus) >> logHook gnomeConfig,
+--        logHook            = dynamicLogWithPP (myPrettyPrinter dbus) >> logHook gnomeConfig,
         startupHook        = myStartupHook
     }
 

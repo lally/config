@@ -1,5 +1,9 @@
 (defvar *aquamacs-p* (boundp 'aquamacs-version))
-
+(require 'haskell-mode)
+(load-library "hideshow")
+(add-hook 'java-mode-hook 'hs-minor-mode)
+(add-hook 'perl-mode-hook 'hs-minor-mode)
+(add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
 (when *aquamacs-p*
   (progn
     (osx-key-mode -1) 
@@ -32,6 +36,7 @@
     )
 )
 
+;; Google-specific configuration
 (when (file-accessible-directory-p "/home/build")
   (progn 
     (load-file "/home/build/public/eng/elisp/google.el")
@@ -56,58 +61,71 @@
     (global-set-key [f12] 'google-compile)
     (setq p4-use-p4config-exclusively t)
     (load-file "~/.emacs.d/site-lisp/cedet-1.0/common/cedet.elc")
-;;----------------------------------------------------------------------
-;; CEDET, for the Java dev environment.
-;;----------------------------------------------------------------------
+    ;(global-set-key [?\M-.] 'gtags-show-tag-locations)
+    (global-set-key [M-*] 'gtags-pop-tag)
+    ;;----------------------------------------------------------------------
+    ;; CEDET, for the Java dev environment.
+    ;;----------------------------------------------------------------------
 
-(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/jde/lisp"))
-(add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/elib"))
-(load-file (expand-file-name "/opt/local/share/emacs/site-lisp/magit.el"))
-(load-file (expand-file-name "~/.emacs.d/plugins/psvn.el"))
+    (add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/jde/lisp"))
+    (add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/elib"))
+    (load-file (expand-file-name "/opt/local/share/emacs/site-lisp/magit.el"))
+    (load-file (expand-file-name "~/.emacs.d/plugins/psvn.el"))
 
-;; Load CEDET
-(load-file "/opt/local/share/emacs/site-lisp/cedet/common/cedet.el")
+    ;; Load CEDET
+    (load-file "/opt/local/share/emacs/site-lisp/cedet/common/cedet.el")
+;;; Emacs/W3 Configuration
+    (setq load-path (cons "/opt/emacs/share/emacs/site-lisp" load-path))
+    (condition-case () (require 'w3-auto "w3-auto") (error nil))
+    ;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
+    ;; * This turns on which-func support (Plus all other code helpers)
+;    (semantic-load-enable-minimum-features)
+                                        ;(semantic-load-enable-code-helpers)
+                                        ;(semantic-load-enable-guady-code-helpers)
+;    (semantic-load-enable-excessive-code-helpers)
+                                        ;(semantic-load-enable-gaudy-code-helpers)
+))
+;;
+;; END HOST-SPECIFIC MODIFICATIONS
 
-;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
-;; * This turns on which-func support (Plus all other code helpers)
-;;(semantic-load-enable-minimum-features)
-;(semantic-load-enable-code-helpers)
-;(semantic-load-enable-guady-code-helpers)
-(semantic-load-enable-excessive-code-helpers)
-;(semantic-load-enable-gaudy-code-helpers)
 
-;; enable JDE. 
-;(require 'jde)
+(require 'cedet)
+(require 'semantic)
+;;
+;; When the site-libs are present
+(when (file-accessible-directory-p "~/config/libs")
+  (progn
+    (add-to-list 'load-path "~/config/libs/magit-0.8.2")))
+
+
 (require 'magit)
 
 ;; IDO, for my enhanced buffer management.
 (require 'ido)
 (ido-mode t)
 (global-ede-mode 1)                      ; Enable the Project management system
-(semantic-load-enable-code-helpers)      ; Enable prototype help and
-                                         ; smart completion
-(global-srecode-minor-mode 1)            ; Enable template insertion menu
+;(semantic-load-enable-code-helpers)      ; Enable prototype help and
+                                        ; smart completion
+;(global-srecode-minor-mode 1)            ; Enable template insertion menu
 
 ;; MAGIT, for GIT support.
 (require 'magit)
 
 (global-set-key [f5] 'magit-status)
 
-;;; Emacs/W3 Configuration
-(setq load-path (cons "/opt/emacs/share/emacs/site-lisp" load-path))
-(condition-case () (require 'w3-auto "w3-auto") (error nil))
 ;;---------------------------------------------------------------------- 
 ;; Haskell mode
 ;;----------------------------------------------------------------------
 
-(load "~/local/haskell-mode-2.4/haskell-site-file")
+;(load "~/local/haskell-mode-2.4/haskell-site-file")
 ;(load "~/local/share/emacs/site-lisp/twit.el")
+(require 'inf-haskell)
 (add-hook 'haskell-mode-hook
-	  (lambda()
-	    (turn-on-haskell-doc-mode t)
-	    (turn-on-haskell-simple-indent t)
-	    (turn-on-font-lock t)
-	    (imenu-add-menubar-index t)))
+          (lambda()
+            (turn-on-haskell-doc-mode t)
+            (turn-on-haskell-simple-indent t)
+            (turn-on-font-lock t)
+            (imenu-add-menubar-index t)))
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
@@ -115,22 +133,27 @@
 (add-hook 'haskell-mode-hook 'font-lock-mode)
 (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
 (custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "black"
+                         :foreground "white" :inverse-video nil :box nil
+                         :strike-through nil :overline nil :underline nil
+                         :slant normal :weight normal :height 90 :width normal
+                         :foundry "unknown" :family "Droid Sans Mono")))))
+
+
+(custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black"
-                :foreground "white" :inverse-video nil :box nil
-                :strike-through nil :overline nil :underline nil
-                :slant normal :weight normal :height 69 :width normal
-                :foundry "unknown" :family "Droid Sans Mono")))))
-
-    )
-  )
-
-;;
-;; END HOST-SPECIFIC MODIFICATIONS
-
+ '(default ((t (:inherit nil :stipple
+ nil :background "black" :foreground "white" :inverse-video nil :box
+ nil :strike-through nil :overline nil :underline nil :slant
+ normal :weight normal :height 90 :width
+ normal :foundry "unknown" :family "monofur")))))
 ;; Locally added - http://www.corp.google.com/eng/google_emacs.html
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
 (add-to-list 'load-path "~/config/libs/site-lisp")
@@ -139,12 +162,15 @@
 (require 'dired-x)
 (require 'column-marker)
 (require 'fic-mode)
+(require 'buff-menu+)
+(require 'langtool)
 ;(require 'magit)
 (autoload 'pymacs-apply "pymacs")
 (autoload 'pymacs-call "pymacs")
 (autoload 'pymacs-eval "pymacs" nil t)
 (autoload 'pymacs-exec "pymacs" nil t)
 (autoload 'pymacs-load "pymacs" nil t)
+(setq langtool-language-tool-jar "/usr/local/share/languagetool-1.6/LanguageTool.jar")
 
 ;(require 'light-symbol)
 (fringe-mode 'minimal)
@@ -190,7 +216,12 @@
         ("\\.h$" (".c" ".cpp" ".cc"))
         ("\\.hpp$" (".c" ".cpp" ".cc"))))
 
+(defun other-window-backwards ()
+  (interactive)
+  (other-window -1))
+
 (global-set-key (kbd "C-c o") 'ff-find-other-file)
+(global-set-key (kbd "C-x O") 'other-window-backwards)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -211,22 +242,18 @@
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  '(color-theme-selection "Black" nil (color-theme))
+ '(column-number-mode t)
  '(display-time-mode t)
  '(ido-default-buffer-method (quote selected-window))
- '(ido-default-file-method (quote selected-window) t)
- '(menu-bar-mode t)
- ;; C-cX for X in [p,t] will enable the right template.
- '(org-capture-templates
-   (quote (("p" "Python" entry (file "~/config/notes.org") "py: ")
-           ("t" "TODO" entry (file "~/config/notes.org") "TODO ")))))
+ '(ido-default-file-method (quote selected-window))
+ '(org-capture-templates (quote (("p" "Python" entry (file "~/config/notes.org") "py: ") ("t" "TODO" entry (file "~/config/notes.org") "TODO "))))
+ '(tool-bar-mode nil))
 
 (set-background-color "black")
 (set-foreground-color "white")
 (set-face-background 'region "midnight blue")
 (set-face-background 'highlight "grey15")
 ;(global-set-key [?\M-.] 'gtags-feeling-lucky)
-(global-set-key [?\M-.] 'gtags-show-tag-locations)
-(global-set-key [M-*] 'gtags-pop-tag)
 
 ;(semantic-enable-gaudy-code-helpers)
 
@@ -299,6 +326,7 @@
 
 (add-hook 'LaTeX-mode-hook
    (lambda()
+     (flyspell-mode 1)
      (turn-on-font-lock)
      (turn-on-auto-fill)))
 
@@ -390,3 +418,12 @@
 
 (global-set-key "\C-\M-g" 'goto-line)
 
+;(setq load-path (cons "/usr/share/emacs/site-lisp/ess" load-path))
+;(load "/usr/share/emacs/site-lisp/ess/ess-site")
+(load "auctex.el" nil t t)
+(load "preview-latex.el" nil t t)
+
+(set-face-foreground 'mode-line-inactive "turquoise1")
+(set-face-background 'mode-line-inactive "black")
+(set-face-foreground 'mode-line "black")
+(set-face-background 'mode-line "turquoise1")
