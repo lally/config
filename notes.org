@@ -1,3 +1,4 @@
+:+TITLE: Rather obsolete now.  THe newest stuff in here is early PPT development.
 
 ** Thu Aug 28 09:27:29 2008 (Give groups stall cycles to catch up on cruft)
 
@@ -57,3 +58,76 @@ important.   In DVE terms, worry about ~N^2 elements.
 ** TODO C
    [2010-11-08 Mon]
    [[file:~/.emacs]]
+** TODO Look up possible model schemas in Cheng's Real-Time Systems.
+   [2010-12-07 Tue]
+
+** Mon Mar 21 17:52:29 2011 (I can use the 'command' option in BORG to describe how to st)
+
+I can use the 'command' option in BORG to describe how to start a process (e.g. ppt-attach).
+I can shove ppt & friends in the borg PACKAGE.
+
+** Fri Apr  8 12:20:52 2011 (This is where we set the initial query-stats block in the st)
+
+This is where we set hte initial query-stats block in the state.  It'll get filled in over the course of the query.
+
+/home/lally/gitwork/qs-flagsetup2/google3/mustang/parent/generic-parent.cc
+
+** Fri Apr  8 12:21:24 2011 (L1633, SearchWithStatus())
+
+L1633, SearchWithStatus()
+
+
+/home/lally/gitwork/qs-flagsetup2/google3/mustang/parent/generic-parent.cc
+
+** Fri Apr  8 12:23:04 2011 (We store the child response at L2957, FullSearchRequestDone.)
+
+We store the child response at L2957, FullSearchRequestDone.
+
+/home/lally/gitwork/qs-flagsetup2/google3/mustang/parent/generic-parent.cc
+
+** Fri Apr  8 12:27:17 2011 (L3071, GPSS::ReturnCombinedSearchResponse -- Get the timers )
+
+L3071, GPSS::ReturnCombinedSearchResponse -- Get the timers we've been
+keeping, and store child_rpcs_usec, calc (?) child_rpcs_90_pct, and
+total_queue_usec.
+
+/home/lally/gitwork/qs-flagsetup2/google3/mustang/parent/generic-parent.cc
+
+** Fri Apr  8 12:27:46 2011 (L3258, FinishSearchProcessing --- finish_queue_usec is set.)
+
+L3258, FinishSearchProcessing --- finish_queue_usec is set.
+
+/home/lally/gitwork/qs-flagsetup2/google3/mustang/parent/generic-parent.cc
+
+** Fri Apr  8 12:28:11 2011 (L3328, FinishSearchProcessing --- finish_usec is set.)
+
+L3328, FinishSearchProcessing --- finish_usec is set.
+
+/home/lally/gitwork/qs-flagsetup2/google3/mustang/parent/generic-parent.cc
+** We don't have a MustangQueryStatlet, even though we have a query_stats_manager.  
+   [2011-05-25 Wed]
+   [[file:~/gitwork/prod-harness/google3/mustang/parent/generic-parent-search-state.h::query_stats_%20%3D%20query_stats%3B][file:~/gitwork/prod-harness/google3/mustang/parent/generic-parent-search-state.h::query_stats_ = query_stats;]]
+
+   It'll have to be set up where we're doing the query_stats setup in
+   generic-parent.
+** ComputeUrnModel and ComputeLinearModel                           :MUSTANG:
+   in generic-servlet-util
+   [2011-06-29 Wed]
+   [[file:~/org/sys/mustang.org::*Rescorer][Rescorer]]
+** 
+   [2011-06-29 Wed]
+   [[file:/usr/local/google/workspaces/qsi-leafscore/google3/mustang/retrieved-documents.cc::bool%20RetrievedDocumentsTier::Add(ScoredDocument*%20sd)%20{][file:/usr/local/google/workspaces/qsi-leafscore/google3/mustang/retrieved-documents.cc::bool RetrievedDocumentsTier::Add(ScoredDocument* sd) {]]
+** Document Filtering Happens Here                             :MUSTANG:LEAF:
+   [2011-06-29 Wed]
+   [[file:/usr/local/google/workspaces/qsi-leafscore/google3/mustang/retrieved-documents.cc::bool%20RetrievedDocumentsTier::Add(ScoredDocument*%20sd)%20{][file:/usr/local/google/workspaces/qsi-leafscore/google3/mustang/retrieved-documents.cc::bool RetrievedDocumentsTier::Add(ScoredDocument* sd) {]]
+
+   A heap is maintained for the top N documents.  Each tier represents a pass
+   over the docset.  The first 'main' tier has the first num_to_score (or
+   similar?) docs pulled from the corpus (in doc_priority (e.g. pagerank)).
+   Then, a modified query is run over the rest of the corpus (constrained to
+   only look at more specific stuff like the doc title), in the secondary
+   tier(s), where it'll be run on the rest of the corpus (probably the rest,
+   dr wasn't sure if it was the rest or all of it), looking for stuff of
+   sufficient relevance to push out stuff from the main tier's rank.
+** TODO Get SCHED_OVERRIDE Ticket up and Running.
+   [2012-03-14 Wed]

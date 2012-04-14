@@ -1,4 +1,3 @@
-
 --
 -- xmonad example config file.
 --
@@ -12,16 +11,25 @@ import XMonad
 -- import Control.OldException(catchDyn,try)
 import Data.Monoid
 import System.Exit
-    
+import DBus
+import DBus.Connection
+import DBus.Message
+
+import XMonad.Actions.GridSelect
+
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
 import XMonad.Util.EZConfig
+import XMonad.Util.Themes
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Layout.NoBorders
+import XMonad.Layout.DwmStyle
 import XMonad.Layout.ThreeColumns
-    
+import XMonad.Layout.SimpleDecoration
+
+
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
@@ -54,12 +62,13 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["emacs","doc","term","goog","5","6","7","8","music"]
+myWorkspaces    = ["emacs","web","term","firefox","nx/misc","emacs2","web2","term2","misc", "misc2"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
-myNormalBorderColor  = "#0c141f"
-myFocusedBorderColor = "#df740c"
+-- <<<<<<< HEAD
+-- myNormalBorderColor  = "#0c141f"
+-- myFocusedBorderColor = "#df740c"
 
 -- Palette
 -- "#df740c" - orange
@@ -67,20 +76,21 @@ myFocusedBorderColor = "#df740c"
 -- E6FFFF - Pane
 -- 6FC3DF - Cyan
 -- 0C141F -- background
+-- Green: 7ce31a
+-- Blue: 4cc0e1
+-- Orange: f3ce3e
+
+myNormalBorderColor  = "#000000" -- Black
+--myFocusedBorderColor = "#4CC0E1" -- Torqoise (blue)
+myFocusedBorderColor = "#4cc0e1" -- Blue #"#F8CE3E" -- Orange
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
-    -- launch a terminal
-    [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
-
-    -- launch dmenu
---    , ((modm .|. shiftMask, xK_r     ), spawn "exe=`dmenu_path | dmenu` && eval \"exec $exe\"")
-
     -- launch gmrun
-    , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
+    [ ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
 
     -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
@@ -136,12 +146,18 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     --
     , ((modm              , xK_b     ), sendMessage ToggleStruts)
 
-    -- Quit xmonad
---    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+    -- Toggle GridSelect program menu
+    , ((modm              , xK_g     ), goToSelected defaultGSConfig)
 
-    -- Logout 
-    , ((modm .|. shiftMask, xK_q     ), spawn "gnome-session-save --gui --logout-dialog") -- "xmonad --recompile; xmonad --restart")
+   -- Note: I can also have a separate grid with different datasets;
+   -- but I think I'd rather bind that to a larger "task" framework later.
+   -- Either way, see http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html
 
+    -- Logout
+    , ((modm .|. shiftMask, xK_q     ), spawn "gnome-session-save --gui --logout-dialog")
+
+    -- Fetch OTP
+    , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
 
     -- lock
     , ((modm .|. shiftMask, xK_l     ), spawn "gnome-screensaver-command -l")
@@ -153,7 +169,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- mod-shift-[1..9], Move client to workspace N
     --
     [((m .|. modm, k), windows $ f i)
-        | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
+        | (i, k) <- zip (XMonad.workspaces conf) ([xK_1 .. xK_9] ++ [xK_0])
         , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
     ++
 
@@ -186,6 +202,37 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     ]
 
 ------------------------------------------------------------------------
+-- Theme
+--
+-- For the title box on the right.
+-- myTheme = defaultTheme
+
+--myTheme = theme donaldTheme  
+-- see http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Util-Themes.html#t%3AThemeInfo
+newTheme :: ThemeInfo
+newTheme = TI "" "" "" defaultTheme
+-- Green: 7ce31a
+-- Blue: 4cc0e1
+-- Orange: f3ce3e
+
+myTheme = newTheme { themeName = "tronTheme"
+                   , themeAuthor = "Lally Singh"
+                   , themeDescription = "from the movie."
+                   , theme = defaultTheme { 
+                               activeColor = "#F3CE3E"
+                             , activeBorderColor = "#f3ce3e"
+                             , activeTextColor = "white"
+                             , inactiveColor = "#000000"
+                             , inactiveBorderColor = "#4cc0e1"
+                             , inactiveTextColor = "#4cc0e1"
+                             , decoHeight = 24
+                             , decoWidth = 300
+                             , fontName = "xft:LMSansDemiCond10:pixelsize=12"
+                             }
+                   }
+
+
+------------------------------------------------------------------------
 -- Layouts:
 
 -- You can specify and transform your layouts by modifying these values.
@@ -196,7 +243,10 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = tiled ||| Mirror tiled ||| noBorders Full ||| ThreeCol 1 (3/100) (1/2)
+myLayout = dwmStyle shrinkText (theme myTheme) (tiled 
+                                                ||| Mirror tiled 
+                                                ||| noBorders Full 
+                                                ||| ThreeCol 1 (3/100) (1/2))
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
@@ -337,30 +387,3 @@ main = --withConnection Session $ \ dbus -> do
         startupHook        = myStartupHook
     }
 
--- A structure containing your configuration settings, overriding
--- fields in the default config. Any you don't override, will
--- use the defaults defined in xmonad/XMonad/Config.hs
---
--- No need to modify this.
---
--- defaults = gnomeConfig {
---       -- simple stuff
---         terminal           = myTerminal,
---         focusFollowsMouse  = myFocusFollowsMouse,
---         borderWidth        = myBorderWidth,
---         modMask            = myModMask,
---         workspaces         = myWorkspaces,
---         normalBorderColor  = myNormalBorderColor,
---         focusedBorderColor = myFocusedBorderColor,
-
---       -- key bindings
---         keys               = myKeys,
---         mouseBindings      = myMouseBindings,
-
---       -- hooks, layouts
---         layoutHook         = desktopLayoutModifiers (myLayout), 
---         manageHook         = myManageHook,
---         handleEventHook    = myEventHook,
---         logHook            =  >> logHook gnomeConfig,
---         startupHook        = myStartupHook
---     }
