@@ -11,9 +11,6 @@ import XMonad
 -- import Control.OldException(catchDyn,try)
 import Data.Monoid
 import System.Exit
-import DBus
-import DBus.Connection
-import DBus.Message
 
 import XMonad.Actions.GridSelect
 
