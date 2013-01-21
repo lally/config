@@ -87,6 +87,12 @@
 ))
 ;;
 ;; END HOST-SPECIFIC MODIFICATIONS
+(global-set-key (kbd "C-M-<left>")  'windmove-left)
+(global-set-key (kbd "C-M-<right>") 'windmove-right)
+(global-set-key (kbd "<XF86Forward>")  'windmove-right)
+(global-set-key (kbd "<XF86Back>") 'windmove-left)
+(global-set-key (kbd "C-M-<up>")    'windmove-up)
+(global-set-key (kbd "C-M-<down>")  'windmove-down)
 
 
 (require 'cedet)
@@ -97,8 +103,6 @@
   (progn
     (add-to-list 'load-path "~/config/libs/magit-0.8.2")))
 
-
-(require 'magit)
 
 ;; IDO, for my enhanced buffer management.
 (require 'ido)
@@ -137,23 +141,10 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black"
-                         :foreground "white" :inverse-video nil :box nil
-                         :strike-through nil :overline nil :underline nil
-                         :slant normal :weight normal :height 90 :width normal
-                         :foundry "unknown" :family "Droid Sans Mono")))))
+ '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 100 :width condensed :foundry "unknown" :family "Anka/Coder Narrow")))))
 
 
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple
- nil :background "black" :foreground "white" :inverse-video nil :box
- nil :strike-through nil :overline nil :underline nil :slant
- normal :weight normal :height 90 :width
- normal :foundry "unknown" :family "monofur")))))
+
 ;; Locally added - http://www.corp.google.com/eng/google_emacs.html
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
 (add-to-list 'load-path "~/config/libs/site-lisp")
@@ -164,13 +155,13 @@
 (require 'fic-mode)
 (require 'buff-menu+)
 (require 'langtool)
-;(require 'magit)
 (autoload 'pymacs-apply "pymacs")
 (autoload 'pymacs-call "pymacs")
 (autoload 'pymacs-eval "pymacs" nil t)
 (autoload 'pymacs-exec "pymacs" nil t)
 (autoload 'pymacs-load "pymacs" nil t)
 (setq langtool-language-tool-jar "/usr/local/share/languagetool-1.6/LanguageTool.jar")
+(setq tramp-default-method "ssh")
 
 ;(require 'light-symbol)
 (fringe-mode 'minimal)
@@ -237,10 +228,10 @@
 (ido-mode t)
 (set-fringe-mode '(1 . 1))
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
  '(display-time-mode t)
@@ -285,11 +276,11 @@
 ;(icy-mode 1)
 (put 'narrow-to-region 'disabled nil)
 ;(set-variable 'icicle-show-Completions-initially t)
-(set-variable 'mouse-autoselect-window t)
+; (set-variable 'mouse-autoselect-window nil)
 ;(icicle-ido-like-mode 1)
 (setq-default ido-default-file-method 'selected-window)
 (setq-default display-buffer-reuse-frames 1)
-(set-fill-column 77)
+(set-fill-column 79)
 (column-marker-1 79)
 (global-font-lock-mode 1)
 
@@ -304,7 +295,6 @@
 ; ORG MODE SETUP
 ;
 (require 'org-install)
-(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (global-font-lock-mode 1)                     ; for all buffers
 ;(add-hook 'org-mode-hook 'turn-on-font-lock)  ; Org buffers only
 ;(add-hook 'org-mode-hook 'turn-on-auto-fill)
@@ -342,11 +332,6 @@
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-hook 'c-mode-common-hook
   (lambda()
-    (local-set-key (kbd "C-c <right>") 'hs-show-block)
-    (local-set-key (kbd "C-c <left>")  'hs-hide-block)
-    (local-set-key (kbd "C-c <up>")    'hs-hide-all)
-    (local-set-key (kbd "C-c <down>")  'hs-show-all)
-    (local-set-key (kbd "<f23>") 'hs-toggle-hiding)
     (set-variable 'tab-width 4)
     (set-variable 'c-basic-offset 4)
     (turn-on-auto-fill)
@@ -374,21 +359,6 @@
 ;    (delete (assoc 'which-func-mode mode-line-format) mode-line-format)
 ;    (setq header-line-format which-func-header-line-format)))
 
-;;==================================================================
-;; Fullscreen support
-;;==================================================================
-
-(defun toggle-fullscreen (&optional f)
-  (interactive)
-  (let ((current-value (frame-parameter nil 'fullscreen)))
-    (set-frame-parameter nil 'fullscreen
-			 (if (equal 'fullboth current-value)
-			     (if (boundp 'old-fullscreen) old-fullscreen nil)
-			   (progn (setq old-fullscreen current-value)
-				  'fullboth)))))
-
-(global-set-key [SunF36] 'toggle-fullscreen)
-(global-set-key [SunF37] 'menu-bar-mode)
 
 (set-variable 'mouse-autoselect-window 1)
 
@@ -427,3 +397,10 @@
 (set-face-background 'mode-line-inactive "black")
 (set-face-foreground 'mode-line "black")
 (set-face-background 'mode-line "turquoise1")
+(defalias 'rs 'replace-string)
+
+;;
+;; Automatic Mode Selection
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
+(put 'set-goal-column 'disabled nil)
