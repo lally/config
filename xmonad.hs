@@ -8,17 +8,18 @@
 --
 
 import XMonad
--- import Control.OldException(catchDyn,try)
 import Data.Monoid
 import System.Exit
 
 import XMonad.Actions.GridSelect
 
+import XMonad.Config.Kde
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
 import XMonad.Util.EZConfig
 import XMonad.Util.Themes
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Layout.NoBorders
@@ -33,7 +34,7 @@ import qualified Data.Map        as M
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "gnome-terminal"
+myTerminal      = "xterm"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -59,7 +60,8 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["emacs","web","term","firefox","nx/misc","emacs2","web2","term2","misc", "misc2"]
+myWorkspaces    = ["emacs","web","term","firefox","nx/misc",
+                   "emacs2","web2","term2","misc", "misc2"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
@@ -76,6 +78,23 @@ myWorkspaces    = ["emacs","web","term","firefox","nx/misc","emacs2","web2","ter
 -- Green: 7ce31a
 -- Blue: 4cc0e1
 -- Orange: f3ce3e
+
+greenColorizer = colorRangeFromClassName
+                     black            -- lowest inactive bg
+                     (0x4c,0xc0,0xe1) -- highest inactive bg
+                     black            -- active bg
+                     white            -- inactive fg
+                     white            -- active fg
+  where black = minBound
+        white = maxBound
+
+-- defaultGSConfig
+gsconfig = (buildDefaultGSConfig greenColorizer)  { 
+             gs_font = "xft:Anka/Coder Condensed:pixelsize=12",
+             gs_cellheight = 30,
+             gs_cellwidth = 300,
+             gs_cellpadding = 15
+}
 
 myNormalBorderColor  = "#000000" -- Black
 --myFocusedBorderColor = "#4CC0E1" -- Torqoise (blue)
@@ -144,20 +163,20 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm              , xK_b     ), sendMessage ToggleStruts)
 
     -- Toggle GridSelect program menu
-    , ((modm              , xK_g     ), goToSelected defaultGSConfig)
+    , ((modm              , xK_g     ), goToSelected gsconfig)
 
    -- Note: I can also have a separate grid with different datasets;
    -- but I think I'd rather bind that to a larger "task" framework later.
    -- Either way, see http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html
 
     -- Logout
-    , ((modm .|. shiftMask, xK_q     ), spawn "gnome-session-save --gui --logout-dialog")
+    -- , ((modm .|. shiftMask, xK_q     ), spawn "gnome-session-save --gui --logout-dialog")
 
     -- Fetch OTP
-    , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
+    -- , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
 
     -- lock
-    , ((modm .|. shiftMask, xK_l     ), spawn "gnome-screensaver-command -l")
+    , ((modm .|. shiftMask, xK_l     ), spawn "xscreensaver-command -lock")
     ]
     ++
 
@@ -273,7 +292,7 @@ myLayout = dwmStyle shrinkText (theme myTheme) (tiled
 -- 'className' and 'resource' are used below.
 --
 myManageHook = composeAll
-    [ manageHook gnomeConfig
+    [ manageHook kde4Config
     , className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
@@ -335,7 +354,7 @@ managementHooks = [
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = mempty
+myEventHook = fullscreenEventHook
 
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -362,7 +381,7 @@ myStartupHook = return ()
 --
 main = --withConnection Session $ \ dbus -> do
 --         getWellKnownName dbus
-         xmonad gnomeConfig {
+         xmonad kde4Config {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
