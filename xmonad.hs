@@ -8,25 +8,25 @@
 --
 
 import XMonad
-import Control.OldException(catchDyn,try)
 import Data.Monoid
 import System.Exit
-import DBus
-import DBus.Connection
-import DBus.Message
 
 import XMonad.Actions.GridSelect
+
+import XMonad.Config.Kde
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
 import XMonad.Util.EZConfig
 import XMonad.Util.Themes
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
+import XMonad.Layout.NoBorders
 import XMonad.Layout.DwmStyle
 import XMonad.Layout.ThreeColumns
 import XMonad.Layout.SimpleDecoration
-import XMonad.Layout.NoBorders
+
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -34,7 +34,7 @@ import qualified Data.Map        as M
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "gnome-terminal"
+myTerminal      = "xterm"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -60,13 +60,41 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["emacs","web","term","firefox","nx/misc","emacs2","web2","term2","misc", "misc2"]
+myWorkspaces    = ["emacs","web","term","firefox","nx/misc",
+                   "emacs2","web2","term2","misc", "misc2"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
+-- <<<<<<< HEAD
+-- myNormalBorderColor  = "#0c141f"
+-- myFocusedBorderColor = "#df740c"
+
+-- Palette
+-- "#df740c" - orange
+-- "#ffe64d" -- blue
+-- E6FFFF - Pane
+-- 6FC3DF - Cyan
+-- 0C141F -- background
 -- Green: 7ce31a
 -- Blue: 4cc0e1
 -- Orange: f3ce3e
+
+greenColorizer = colorRangeFromClassName
+                     black            -- lowest inactive bg
+                     (0x4c,0xc0,0xe1) -- highest inactive bg
+                     black            -- active bg
+                     white            -- inactive fg
+                     white            -- active fg
+  where black = minBound
+        white = maxBound
+
+-- defaultGSConfig
+gsconfig = (buildDefaultGSConfig greenColorizer)  { 
+             gs_font = "xft:Anka/Coder Condensed:pixelsize=12",
+             gs_cellheight = 30,
+             gs_cellwidth = 300,
+             gs_cellpadding = 15
+}
 
 myNormalBorderColor  = "#000000" -- Black
 --myFocusedBorderColor = "#4CC0E1" -- Torqoise (blue)
@@ -76,9 +104,6 @@ myFocusedBorderColor = "#4cc0e1" -- Blue #"#F8CE3E" -- Orange
 -- Key bindings. Add, modify or remove key bindings here.
 --
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
-
-    -- launch a terminal
-    -- [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
     -- launch gmrun
     [ ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
@@ -138,20 +163,20 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm              , xK_b     ), sendMessage ToggleStruts)
 
     -- Toggle GridSelect program menu
-    , ((modm              , xK_g     ), goToSelected defaultGSConfig)
+    , ((modm              , xK_g     ), goToSelected gsconfig)
 
    -- Note: I can also have a separate grid with different datasets;
    -- but I think I'd rather bind that to a larger "task" framework later.
    -- Either way, see http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html
 
     -- Logout
-    , ((modm .|. shiftMask, xK_q     ), spawn "gnome-session-save --gui --logout-dialog")
+    -- , ((modm .|. shiftMask, xK_q     ), spawn "gnome-session-save --gui --logout-dialog")
 
     -- Fetch OTP
-    , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
+    -- , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
 
     -- lock
-    , ((modm .|. shiftMask, xK_l     ), spawn "gnome-screensaver-command -l")
+    , ((modm .|. shiftMask, xK_l     ), spawn "xscreensaver-command -lock")
     ]
     ++
 
@@ -267,23 +292,13 @@ myLayout = dwmStyle shrinkText (theme myTheme) (tiled
 -- 'className' and 'resource' are used below.
 --
 myManageHook = composeAll
-    [ manageHook gnomeConfig
+    [ manageHook kde4Config
     , className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore 
     , isFullscreen --> doFullFloat ]
 
-
-myPrettyPrinter :: Connection -> PP
-myPrettyPrinter dbus = defaultPP {
-    ppOutput  = outputThroughDBus dbus
-  , ppTitle   = pangoColor "#003366" . shorten 50 . pangoSanitize
-  , ppCurrent = pangoColor "#006666" . wrap "[" "]" . pangoSanitize
-  , ppVisible = pangoColor "#663366" . wrap "(" ")" . pangoSanitize
-  , ppHidden  = wrap " " " "
-  , ppUrgent  = pangoColor "red"
-  }
 
 managementHooks :: [ManageHook]
 managementHooks = [
@@ -296,38 +311,38 @@ managementHooks = [
 
 -- This retry is really awkward, but sometimes DBus won't let us get our
 -- name unless we retry a couple times.
-getWellKnownName :: Connection -> IO ()
-getWellKnownName dbus = tryGetName `catchDyn` (\ (DBus.Error _ _) ->
-                                                getWellKnownName dbus)
- where
-  tryGetName = do
-    namereq <- newMethodCall serviceDBus pathDBus interfaceDBus "RequestName"
-    addArgs namereq [String "org.xmonad.Log", Word32 5]
-    sendWithReplyAndBlock dbus namereq 0
-    return ()
+-- getWellKnownName :: Connection -> IO ()
+-- getWellKnownName dbus = tryGetName `catchDyn` (\ (DBus.Error _ _) ->
+--                                                 getWellKnownName dbus)
+--  where
+--   tryGetName = do
+--     namereq <- newMethodCall serviceDBus pathDBus interfaceDBus "RequestName"
+--     addArgs namereq [String "org.xmonad.Log", Word32 5]
+--     sendWithReplyAndBlock dbus namereq 0
+--     return ()
 
-outputThroughDBus :: Connection -> String -> IO ()
-outputThroughDBus dbus str = do
-  let str' = "<span font=\"Terminus 9 Bold\">" ++ str ++ "</span>"
-  msg <- newSignal "/org/xmonad/Log" "org.xmonad.Log" "Update"
-  addArgs msg [String str']
-  send dbus msg 0 `catchDyn` (\ (DBus.Error _ _ ) -> return 0)
-  return ()
+-- outputThroughDBus :: Connection -> String -> IO ()
+-- outputThroughDBus dbus str = do
+--   let str' = "<span font=\"Terminus 9 Bold\">" ++ str ++ "</span>"
+--   msg <- newSignal "/org/xmonad/Log" "org.xmonad.Log" "Update"
+--   addArgs msg [String str']
+--   send dbus msg 0 `catchDyn` (\ (DBus.Error _ _ ) -> return 0)
+--   return ()
 
-pangoColor :: String -> String -> String
-pangoColor fg = wrap left right
- where
-  left  = "<span foreground=\"" ++ fg ++ "\">"
-  right = "</span>"
+-- pangoColor :: String -> String -> String
+-- pangoColor fg = wrap left right
+--  where
+--   left  = "<span foreground=\"" ++ fg ++ "\">"
+--   right = "</span>"
 
-pangoSanitize :: String -> String
-pangoSanitize = foldr sanitize ""
- where
-  sanitize '>'  acc = "&gt;" ++ acc
-  sanitize '<'  acc = "&lt;" ++ acc
-  sanitize '\"' acc = "&quot;" ++ acc
-  sanitize '&'  acc = "&amp;" ++ acc
-  sanitize x    acc = x:acc
+-- pangoSanitize :: String -> String
+-- pangoSanitize = foldr sanitize ""
+--  where
+--   sanitize '>'  acc = "&gt;" ++ acc
+--   sanitize '<'  acc = "&lt;" ++ acc
+--   sanitize '\"' acc = "&quot;" ++ acc
+--   sanitize '&'  acc = "&amp;" ++ acc
+--   sanitize x    acc = x:acc
 
 
 ------------------------------------------------------------------------
@@ -339,7 +354,7 @@ pangoSanitize = foldr sanitize ""
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = mempty
+myEventHook = fullscreenEventHook
 
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -364,9 +379,9 @@ myStartupHook = return ()
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
-main = withConnection Session $ \ dbus -> do
-         getWellKnownName dbus
-         xmonad gnomeConfig {
+main = --withConnection Session $ \ dbus -> do
+--         getWellKnownName dbus
+         xmonad kde4Config {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
@@ -384,7 +399,7 @@ main = withConnection Session $ \ dbus -> do
         layoutHook         = desktopLayoutModifiers (myLayout), 
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
-        logHook            = dynamicLogWithPP (myPrettyPrinter dbus) >> logHook gnomeConfig,
+--        logHook            = dynamicLogWithPP (myPrettyPrinter dbus) >> logHook gnomeConfig,
         startupHook        = myStartupHook
     }
 
