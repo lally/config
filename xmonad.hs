@@ -26,6 +26,10 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.DwmStyle
 import XMonad.Layout.ThreeColumns
 import XMonad.Layout.SimpleDecoration
+import XMonad.Layout.SubLayouts
+import XMonad.Layout.WindowNavigation
+import XMonad.Layout.BoringWindows
+import XMonad.Actions.Submap
 
 
 import qualified XMonad.StackSet as W
@@ -79,16 +83,16 @@ myWorkspaces    = ["emacs","web","term","firefox","nx/misc",
 -- Orange: f3ce3e
 
 greenColorizer = colorRangeFromClassName
-                     black            -- lowest inactive bg
+                     (0x04,0x0c,0x0e) -- lowest inactive bg
                      (0x4c,0xc0,0xe1) -- highest inactive bg
-                     black            -- active bg
-                     white            -- inactive fg
-                     white            -- active fg
-  where black = minBound
-        white = maxBound
+                     (0xdf,0x74,0x0c)            -- active bg
+                     (0xe0,0xe0,0xe0)            -- inactive fg
+                     (0xff,0xff,0xff)            -- active fg
+--  where black = minBound
+--        white = maxBound
 
 -- defaultGSConfig
-gsconfig = (buildDefaultGSConfig greenColorizer)  { 
+gsconfig = (buildDefaultGSConfig greenColorizer)  {
              gs_font = "xft:Anka/Coder Condensed:pixelsize=12",
              gs_cellheight = 30,
              gs_cellwidth = 300,
@@ -107,7 +111,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- launch gmrun
     [ ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
 
-    -- close focused window
+      -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
 
      -- Rotate through the available layout algorithms
@@ -122,11 +126,26 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Move focus to the next window
     , ((modm,               xK_Tab   ), windows W.focusDown)
 
+    , ((modm .|. controlMask, xK_h), sendMessage $ pullGroup L)
+    , ((modm .|. controlMask, xK_l), sendMessage $ pullGroup R)
+    , ((modm .|. controlMask, xK_k), sendMessage $ pullGroup U)
+    , ((modm .|. controlMask, xK_j), sendMessage $ pullGroup D)
+
+    , ((modm .|. controlMask, xK_m), withFocused (sendMessage . MergeAll))
+    , ((modm .|. controlMask, xK_u), withFocused (sendMessage . UnMerge))
+
+    , ((modm .|. controlMask, xK_period), onGroup W.focusDown')
+    , ((modm .|. controlMask, xK_comma), onGroup W.focusUp')
+    , ((modm, xK_j), focusDown)
+    , ((modm, xK_k), focusUp)
+    , ((modm, xK_s), submap $ defaultSublMap conf)
+
+
     -- Move focus to the next window
-    , ((modm,               xK_j     ), windows W.focusDown)
+--    , ((modm,               xK_j     ), windows W.focusDown)
 
     -- Move focus to the previous window
-    , ((modm,               xK_k     ), windows W.focusUp  )
+--    , ((modm,               xK_k     ), windows W.focusUp  )
 
     -- Move focus to the master window
     , ((modm,               xK_m     ), windows W.focusMaster  )
@@ -222,7 +241,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- For the title box on the right.
 -- myTheme = defaultTheme
 
---myTheme = theme donaldTheme  
+--myTheme = theme donaldTheme
 -- see http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Util-Themes.html#t%3AThemeInfo
 newTheme :: ThemeInfo
 newTheme = TI "" "" "" defaultTheme
@@ -233,16 +252,17 @@ newTheme = TI "" "" "" defaultTheme
 myTheme = newTheme { themeName = "tronTheme"
                    , themeAuthor = "Lally Singh"
                    , themeDescription = "from the movie."
-                   , theme = defaultTheme { 
+                   , theme = defaultTheme {
                                activeColor = "#F3CE3E"
                              , activeBorderColor = "#f3ce3e"
-                             , activeTextColor = "white"
+                             , activeTextColor = "#ffffff"
                              , inactiveColor = "#000000"
                              , inactiveBorderColor = "#4cc0e1"
                              , inactiveTextColor = "#4cc0e1"
                              , decoHeight = 24
                              , decoWidth = 300
-                             , fontName = "xft:LMSansDemiCond10:pixelsize=12"
+--                             , fontName = "xft:LMSansDemiCond10:pixelsize=12"
+                             , fontName = "xft:Anka/Coder Condensed:pixelsize=12"
                              }
                    }
 
@@ -258,10 +278,11 @@ myTheme = newTheme { themeName = "tronTheme"
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = dwmStyle shrinkText (theme myTheme) (tiled 
-                                                ||| Mirror tiled 
-                                                ||| noBorders Full 
-                                                ||| ThreeCol 1 (3/100) (1/2))
+-- windowNavigation $ subTabbed $ boringWindows $
+myLayout = dwmStyle shrinkText (theme myTheme) (
+  windowNavigation $ subTabbed $ boringWindows $ (tiled ||| Mirror tiled
+                                                  ||| noBorders Full
+                                                  ||| ThreeCol nmaster delta ratio))
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
