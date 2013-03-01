@@ -65,7 +65,6 @@ myWorkspaces    = ["emacs","web","term","firefox","nx/misc",
 
 -- Border colors for unfocused and focused windows, respectively.
 --
--- <<<<<<< HEAD
 -- myNormalBorderColor  = "#0c141f"
 -- myFocusedBorderColor = "#df740c"
 
