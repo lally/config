@@ -1,3 +1,4 @@
+; (package-init)
 (defvar *aquamacs-p* (boundp 'aquamacs-version))
 (require 'haskell-mode)
 (load-library "hideshow")
@@ -404,3 +405,27 @@
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
 (put 'set-goal-column 'disabled nil)
+
+; (add-to-list 'package-archives
+;             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+
+  (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                           ("marmalade" . "http://marmalade-repo.org/packages/")
+                           ("melpa" . "http://melpa.milkbox.net/packages/")))
+(require 'git-gutter)
+
+;; If you enable global minor mode
+(global-git-gutter-mode t)
+
+;; If you enable git-gutter-mode for some modes
+(add-hook 'LaTeX-mode-hook 'git-gutter-mode)
+
+(global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
+(global-set-key (kbd "C-x v =") 'git-gutter:popup-diff)
+
+;; Jump to next/previous hunk
+(global-set-key (kbd "C-x p") 'git-gutter:previous-hunk)
+(global-set-key (kbd "C-x n") 'git-gutter:next-hunk)
+
+;; Revert current hunk
+(global-set-key (kbd "C-x r") 'git-gutter:revert-hunk)
