@@ -69,7 +69,6 @@ myWorkspaces    = ["emacs","web","term","firefox","nx/misc",
 
 -- Border colors for unfocused and focused windows, respectively.
 --
--- <<<<<<< HEAD
 -- myNormalBorderColor  = "#0c141f"
 -- myFocusedBorderColor = "#df740c"
 
@@ -195,7 +194,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
 
     -- lock
-    , ((modm .|. shiftMask, xK_l     ), spawn "xscreensaver-command -lock")
+    , ((modm .|. shiftMask, xK_l     ), spawn "qdbus org.freedesktop.ScreenSaver /ScreenSaver Lock")
     ]
     ++
 
@@ -316,8 +315,12 @@ myManageHook = composeAll
     [ manageHook kde4Config
     , className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
-    , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore 
+    , title     =? "plasma-desktop" --> doFloat
+    , resource  =? "desktop_window" --> doFloat
+    , resource  =? "kdesktop"       --> doFloat
+--    , title     =? "plasma-desktop" --> doIgnore
+--    , resource  =? "desktop_window" --> doIgnore
+--    , resource  =? "kdesktop"       --> doIgnore
     , isFullscreen --> doFullFloat ]
 
 
