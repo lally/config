@@ -1,27 +1,32 @@
 --
--- xmonad example config file.
---
--- A template showing all available configuration hooks,
--- and how to override the defaults in your own xmonad.hs conf file.
---
--- Normally, you'd only override those defaults you care about.
---
+-- An XMonad configuration file with:
+--   SubLayouts
+--   Proper floating window support for KDE
+--   GridSelect
+--   Little title box overlays for non-focus windows.
 
 import XMonad
+import Control.Exception (bracket)
 import Data.Monoid
 import System.Exit
+import System.Process (readProcessWithExitCode, system)
 
 import XMonad.Actions.GridSelect
+import XMonad.Actions.SpawnOn (spawnAndDo, manageSpawn)
+import XMonad.Actions.Submap
 
 import XMonad.Config.Kde
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
+
 import XMonad.Util.EZConfig
 import XMonad.Util.Themes
+
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
+
 import XMonad.Layout.NoBorders
 import XMonad.Layout.DwmStyle
 import XMonad.Layout.ThreeColumns
@@ -29,8 +34,6 @@ import XMonad.Layout.SimpleDecoration
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.BoringWindows
-import XMonad.Actions.Submap
-
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -104,6 +107,28 @@ myNormalBorderColor  = "#000000" -- Black
 myFocusedBorderColor = "#4cc0e1" -- Blue #"#F8CE3E" -- Orange
 
 ------------------------------------------------------------------------
+-- Custom actions
+--
+
+-- XXX actually getting process exit status within xmonad is painful; we need to
+--     claim our SIGPIPE back:
+noSignalHandlers =
+    (bracket uninstallSignalHandlers $ const installSignalHandlers) . const
+xsystem = noSignalHandlers . system
+
+-- (Google specific)
+getProdAccess :: X ()
+getProdAccess = do
+    -- determine if prodaccess is already available
+    status <- io $ xsystem "prodcertstatus --quiet --check_ssh --check_remaining_hours=10"
+    -- if not, run prodaccess in a little floating xterm
+    case status of
+        ExitSuccess -> return ()
+        otherwise ->
+            spawnAndDo doCenterFloat "xterm -title prodaccess -geometry 60x5 -e prodaccess -s"
+
+
+------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
@@ -126,6 +151,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Move focus to the next window
     , ((modm,               xK_Tab   ), windows W.focusDown)
 
+    -- Group-based window management
     , ((modm .|. controlMask, xK_h), sendMessage $ pullGroup L)
     , ((modm .|. controlMask, xK_l), sendMessage $ pullGroup R)
     , ((modm .|. controlMask, xK_k), sendMessage $ pullGroup U)
@@ -136,16 +162,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     , ((modm .|. controlMask, xK_period), onGroup W.focusDown')
     , ((modm .|. controlMask, xK_comma), onGroup W.focusUp')
-    , ((modm, xK_j), focusDown)
-    , ((modm, xK_k), focusUp)
-    , ((modm, xK_s), submap $ defaultSublMap conf)
-
-
-    -- Move focus to the next window
---    , ((modm,               xK_j     ), windows W.focusDown)
-
-    -- Move focus to the previous window
---    , ((modm,               xK_k     ), windows W.focusUp  )
+    , ((modm,               xK_j), focusDown)
+    , ((modm,               xK_k), focusUp)
+    , ((modm,               xK_s), submap $ defaultSublMap conf)
 
     -- Move focus to the master window
     , ((modm,               xK_m     ), windows W.focusMaster  )
@@ -184,17 +203,23 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm              , xK_g     ), goToSelected gsconfig)
 
    -- Note: I can also have a separate grid with different datasets;
-   -- but I think I'd rather bind that to a larger "task" framework later.
-   -- Either way, see http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html
+   -- but I think I'd rather bind that to a larger "task" framework
+   -- later.  Either way, see
+   -- http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html
 
     -- Logout
-    -- , ((modm .|. shiftMask, xK_q     ), spawn "gnome-session-save --gui --logout-dialog")
+    -- , ((modm .|. shiftMask, xK_q     ),
+    --                  spawn "gnome-session-save --gui --logout-dialog")
 
     -- Fetch OTP
     -- , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
 
     -- lock
-    , ((modm .|. shiftMask, xK_l     ), spawn "qdbus org.freedesktop.ScreenSaver /ScreenSaver Lock")
+    , ((modm .|. shiftMask, xK_l     ),
+                  spawn "qdbus org.freedesktop.ScreenSaver /ScreenSaver Lock")
+
+    -- prodaccess
+    , ((modm .|. controlMask, xK_p    ), getProdAccess)
     ]
     ++
 
@@ -311,6 +336,9 @@ myLayout = dwmStyle shrinkText (theme myTheme) (
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
+-- TODO(lally): Look at scratchpad workspaces (Util.Scratchpad?
+-- scratchpadFilterOutWorkspace) to put the mount-info popup on.  Those should
+-- never get shown.
 myManageHook = composeAll
     [ manageHook kde4Config
     , className =? "MPlayer"        --> doFloat
@@ -318,9 +346,10 @@ myManageHook = composeAll
     , title     =? "plasma-desktop" --> doFloat
     , resource  =? "desktop_window" --> doFloat
     , resource  =? "kdesktop"       --> doFloat
---    , title     =? "plasma-desktop" --> doIgnore
---    , resource  =? "desktop_window" --> doIgnore
---    , resource  =? "kdesktop"       --> doIgnore
+    , className =? "InputOutput"    --> doFloat
+    , title     =? "Eclipse"        --> doFloat
+    , className =? "Plasma-desktop" --> doFloat -- (doShift "misc2")
+    , isDialog                      --> doCenterFloat
     , isFullscreen --> doFullFloat ]
 
 
@@ -329,45 +358,6 @@ managementHooks = [
     resource  =? "Do"        --> doIgnore
   , className =? "rdesktop"  --> doFloat
   ]
-
--- -----------------------------------------------------------------------------
-
-
--- This retry is really awkward, but sometimes DBus won't let us get our
--- name unless we retry a couple times.
--- getWellKnownName :: Connection -> IO ()
--- getWellKnownName dbus = tryGetName `catchDyn` (\ (DBus.Error _ _) ->
---                                                 getWellKnownName dbus)
---  where
---   tryGetName = do
---     namereq <- newMethodCall serviceDBus pathDBus interfaceDBus "RequestName"
---     addArgs namereq [String "org.xmonad.Log", Word32 5]
---     sendWithReplyAndBlock dbus namereq 0
---     return ()
-
--- outputThroughDBus :: Connection -> String -> IO ()
--- outputThroughDBus dbus str = do
---   let str' = "<span font=\"Terminus 9 Bold\">" ++ str ++ "</span>"
---   msg <- newSignal "/org/xmonad/Log" "org.xmonad.Log" "Update"
---   addArgs msg [String str']
---   send dbus msg 0 `catchDyn` (\ (DBus.Error _ _ ) -> return 0)
---   return ()
-
--- pangoColor :: String -> String -> String
--- pangoColor fg = wrap left right
---  where
---   left  = "<span foreground=\"" ++ fg ++ "\">"
---   right = "</span>"
-
--- pangoSanitize :: String -> String
--- pangoSanitize = foldr sanitize ""
---  where
---   sanitize '>'  acc = "&gt;" ++ acc
---   sanitize '<'  acc = "&lt;" ++ acc
---   sanitize '\"' acc = "&quot;" ++ acc
---   sanitize '&'  acc = "&amp;" ++ acc
---   sanitize x    acc = x:acc
-
 
 ------------------------------------------------------------------------
 -- Event handling
@@ -378,7 +368,7 @@ managementHooks = [
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = fullscreenEventHook
+myEventHook = ewmhDesktopsEventHook -- fullscreenEventHook
 
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -403,9 +393,7 @@ myStartupHook = return ()
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
-main = --withConnection Session $ \ dbus -> do
---         getWellKnownName dbus
-         xmonad kde4Config {
+main = xmonad kde4Config {
       -- simple stuff
         terminal           = myTerminal,
         focusFollowsMouse  = myFocusFollowsMouse,
@@ -423,7 +411,6 @@ main = --withConnection Session $ \ dbus -> do
         layoutHook         = desktopLayoutModifiers (myLayout), 
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
---        logHook            = dynamicLogWithPP (myPrettyPrinter dbus) >> logHook gnomeConfig,
         startupHook        = myStartupHook
     }
 
