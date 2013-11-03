@@ -1,103 +1,66 @@
-; (package-init)
-(defvar *aquamacs-p* (boundp 'aquamacs-version))
-(require 'haskell-mode)
-(load-library "hideshow")
-(add-hook 'java-mode-hook 'hs-minor-mode)
-(add-hook 'perl-mode-hook 'hs-minor-mode)
-(add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
-(when *aquamacs-p*
-  (progn
-    (osx-key-mode -1) 
-    (unless window-system   ;; in TTY (terminal) modee
-      (normal-erase-is-backspace-mode nil)
-      (set-face-inverse-video-p 'mode-line-inactive t)
-      (define-key osx-key-mode-map "\C-z" 'suspend-emacs))
- 
-    (setq
-     ns-command-modifier 'meta         ; Apple/Command key is Meta
-     ns-alternate-modifier nil         ; Option is the Mac Option key
-     ns-use-mac-modifier-symbols  nil  ; display standard Emacs (and not standard Mac) modifier symbols)
-     )
- 
-    ;; Persistency and modes:
-    (setq
-     initial-major-mode 'emacs-lisp-mode              ; *scratch* shows up in emacs-lisp-mode
-     ;; aquamacs-default-major-mode 'emacs-lisp-mode  ; new buffers open in emacs-lisp-mode
-     )
- 
-    ; Frame and window management:
-    (ido-mode 1)
-    (tabbar-mode -1)		     ; no tabbar
-    (one-buffer-one-frame-mode -1)       ; no one-buffer-per-frame
-    (setq special-display-regexps nil)   ; do not open certain buffers in special windows/frames
-    ; (tool-bar-mode 0) ; turn off toolbar
-    ; (scroll-bar-mode -1)  ; no scrollbars
-    ;; Appearance
-    (aquamacs-autoface-mode -1) ; no mode-specific faces, everything in Monaco
-    )
-)
-
-;; Google-specific configuration
-(when (file-accessible-directory-p "/home/build")
-  (progn 
-    (load-file "/home/build/public/eng/elisp/google.el")
-	 ;Some extra local packages are available that are not included by
-	 ;google.el by default. You need to require those modules explicitly if
-	 ;you want their functionality. These include:
-
-    (require 'p4-google)                ;; g4-annotate, improves find-file-at-point
-    (require 'compilation-colorization) ;; colorizes output of (i)grep
-    (require 'rotate-clients)           ;; google-rotate-client
-    (require 'rotate-among-files)       ;; google-rotate-among-files
-    (require 'googlemenu)               ;; handy Google menu bar
-    (require 'google-java)              ;; fast Java compilation code
-    (require 'p4-files)                 ;; transparent support for
-    ;; Perforce filesystem
-    (require 'google3)                  ;; magically set paths for
-    ;; compiling google3 code
-    (require 'gsearch)                  ;; Search the whole Google code base.
-    (require 'googlemenu)
-    (add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
-    (p4-enable-file-name-handler)
-    (global-set-key [f12] 'google-compile)
-    (setq p4-use-p4config-exclusively t)
-    (load-file "~/.emacs.d/site-lisp/cedet-1.0/common/cedet.elc")
-    ;(global-set-key [?\M-.] 'gtags-show-tag-locations)
-    (global-set-key [M-*] 'gtags-pop-tag)
-    ;;----------------------------------------------------------------------
-    ;; CEDET, for the Java dev environment.
-    ;;----------------------------------------------------------------------
-
-    (add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/jde/lisp"))
-    (add-to-list 'load-path (expand-file-name "/opt/local/share/emacs/site-lisp/elib"))
-    (load-file (expand-file-name "/opt/local/share/emacs/site-lisp/magit.el"))
-    (load-file (expand-file-name "~/.emacs.d/plugins/psvn.el"))
-
-    ;; Load CEDET
-    (load-file "/opt/local/share/emacs/site-lisp/cedet/common/cedet.el")
-;;; Emacs/W3 Configuration
-    (setq load-path (cons "/opt/emacs/share/emacs/site-lisp" load-path))
-    (condition-case () (require 'w3-auto "w3-auto") (error nil))
-    ;; Enabling various SEMANTIC minor modes.  See semantic/INSTALL for more ideas.
-    ;; * This turns on which-func support (Plus all other code helpers)
-;    (semantic-load-enable-minimum-features)
-                                        ;(semantic-load-enable-code-helpers)
-                                        ;(semantic-load-enable-guady-code-helpers)
-;    (semantic-load-enable-excessive-code-helpers)
-                                        ;(semantic-load-enable-gaudy-code-helpers)
-))
+;;============================================================
+;; AUTOSAVE CONFIGURATION
+;;============================================================
+;; LS: this is to prevent slow-ass NFS calls.  This is up front to prevent
+;; the performance going to hell if another part of the file breaks.
 ;;
-;; END HOST-SPECIFIC MODIFICATIONS
-(global-set-key (kbd "C-M-<left>")  'windmove-left)
-(global-set-key (kbd "C-M-<right>") 'windmove-right)
-(global-set-key (kbd "<XF86Forward>")  'windmove-right)
-(global-set-key (kbd "<XF86Back>") 'windmove-left)
-(global-set-key (kbd "C-M-<up>")    'windmove-up)
-(global-set-key (kbd "C-M-<down>")  'windmove-down)
+;; Put autosave files (ie #foo#) in one place, *not* scattered all over the
+;; file system! (The make-autosave-file-name function is invoked to determine
+;; the filename of an autosave file.)
+(defvar autosave-dir (concat "/tmp/emacs_autosaves/" (user-login-name) "/"))
+(make-directory autosave-dir t)
+
+(defun auto-save-file-name-p (filename)
+  (string-match "^#.*#$" (file-name-nondirectory filename)))
+
+(defun make-auto-save-file-name ()
+  (concat autosave-dir
+   (if buffer-file-name
+      (concat "#" (file-name-nondirectory buffer-file-name) "#")
+    (expand-file-name
+     (concat "#%" (buffer-name) "#")))))
+
+;; Put backup files (ie foo~) in one place too. (The backup-directory-alist
+;; list contains regexp=>directory mappings; filenames matching a regexp are
+;; backed up in the corresponding directory. Emacs will mkdir it if necessary.)
+(defvar backup-dir (concat "/tmp/emacs_backups/" (user-login-name) "/"))
+(setq backup-directory-alist (list (cons "." backup-dir)))
+
+;; Another attempt to speed up emacs.
+(setq vc-handled-backends nil)
+
+(defun xauth-command (&rest args)
+  "Calls xauth(1) with the commandline arguments ARGS, returning a
+string containing the output"
+  (with-output-to-string
+    (with-current-buffer
+   standard-output
+      (apply 'call-process "xauth" nil t nil args))))
+
+(defun xauth-list (&optional authority-file)
+  "Returns a list of the current X authority tokens, each element of
+the form (display key-protocol hex-string)"
+  (mapcar 'split-string
+     ;; eliminate blank lines
+     (remove-if (lambda (s) (zerop (length s)))
+           (split-string (apply 'xauth-command
+                 (append (if authority-file
+                        (list
+                         "-f"
+                         authority-file
+                         "-i")
+                      nil)
+                    (list "list")))
+               "[\n]"))))
+
+(defun xauth-add (display key-protocol hex-string &optional authority-file)
+  "Adds an X authority token to the data base."
+  (apply 'xauth-command (append (if authority-file
+                (list "-f" authority-file)
+              nil)
+            (list "add" display key-protocol hex-string))))
 
 
-(require 'cedet)
-(require 'semantic)
 ;;
 ;; When the site-libs are present
 (when (file-accessible-directory-p "~/config/libs")
@@ -145,45 +108,244 @@
  '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 81 :width condensed :foundry "unknown" :family "Anka/Coder Narrow")))))
 
 
+;; ALIASES
+(defalias 'rs 'replace-string)
+(defalias 'ar 'align-regexp)
+(put 'scroll-left 'disabled nil)
+
+;; GDB Setup
+(setq gdb-command-name "gdb --nx")
+
+(if 
+    (file-exists-p "/home/build")
+
+    (progn
+      ;;============================================================
+      ;; GOOGLE SETUP
+      ;;============================================================
+      (load-file "/home/build/public/eng/elisp/google.el")
+                                        ;Some extra local packages are available that are not included by
+                                        ;google.el by default. You need to require those modules explicitly if
+                                        ;you want their functionality. These include:
+      (require 'google)
+      (require 'compilation-colorization) ;; colorizes output of (i)grep
+      (require 'rotate-clients)           ;; google-rotate-client
+      (require 'rotate-among-files)       ;; google-rotate-among-files
+      (require 'googlemenu)               ;; handy Google menu bar
+      (require 'google3)                  ;; magically set paths for
+      ;; compiling google3 code
+      (require 'google-imports) ;; M-x google-imports-iwyu
+      )
+)
 
 ;; Locally added - http://www.corp.google.com/eng/google_emacs.html
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/icicles")
+; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/lisp")
+; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/contrib/lisp")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
+(add-to-list 'load-path "/usr/local/share/emacs23/site-lisp")
+(add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
+;; Stuff in config/libs/*
 (add-to-list 'load-path "~/config/libs/site-lisp")
-
+(add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
+(add-to-list 'load-path "~/config/libs/site-lisp/magit-0.8.2")
+(require 'googlemenu)
 (require 'dired-details+)
 (require 'dired-x)
 (require 'column-marker)
 (require 'fic-mode)
+(require 'magit)
 (require 'buff-menu+)
-(require 'langtool)
+;(require 'dbgr)
+(require 'protobuf-mode)            ;; protocol buffers support
+(require 'vline)
+(require 'org-install)
+(require 'org-habit)
+(require 'haskell-mode)
+(load-library "gm-prepare")
+
+
+
 (autoload 'pymacs-apply "pymacs")
 (autoload 'pymacs-call "pymacs")
 (autoload 'pymacs-eval "pymacs" nil t)
 (autoload 'pymacs-exec "pymacs" nil t)
 (autoload 'pymacs-load "pymacs" nil t)
-(setq langtool-language-tool-jar "/usr/local/share/languagetool-1.6/LanguageTool.jar")
-(setq tramp-default-method "ssh")
 
+(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+
+
+(load-file "/usr/local/google/src/cedet-1.1/common/cedet.el")
 ;(require 'light-symbol)
+<<<<<<< HEAD
 ;(fringe-mode "left-only")
 (add-hook 'c++-mode-hook 'turn-on-fic-mode)
-(add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
-(defun my-py-mode-hook()
+=======
+(fringe-mode 'left-only)
+(setq ido-max-directory-size 100000) ;; in _bytes_, not dirents.
+(setq gtags-use-gtags-mixer nil)
+
+;;============================================================
+;; Custom Editing Functions
+;;============================================================
+
+;; http://www.emacswiki.org/emacs/IncrementNumber
+(defun my-increment-number-decimal (&optional arg)
+  "Increment the number forward from point by 'arg'."
+  (interactive "p*")
+  (save-excursion
+    (save-match-data
+      (let (inc-by field-width answer)
+        (setq inc-by (if arg arg 1))
+        (skip-chars-backward "0123456789")
+        (when (re-search-forward "[0-9]+" nil t)
+          (setq field-width (- (match-end 0) (match-beginning 0)))
+          (setq answer (+ (string-to-number (match-string 0) 10) inc-by))
+          (when (< answer 0)
+            (setq answer (+ (expt 10 field-width) answer)))
+          (replace-match (format (concat "%0" (int-to-string field-width) "d")
+                                 answer)))))))
+
+;; https://github.com/benma/emacs.d/blob/a22f73ee26473bf94775f04c3f969523f6bbb145/init.el#L333
+(defun whack-whitespace ()
+  "Delete all white space from point to the next word."
+  (interactive nil)
+  (when (re-search-forward "[ \t\n]+" nil t)
+    (replace-match "" nil nil)))
+
+(defun reverse-other-window ()
   (interactive)
-  (c-subword-mode 1)
+  (other-window -1))
+
+
+;;============================================================
+;; C++ SETUP
+;;============================================================
+(defun local-cpp-mode-hook()
+  (interactive)
+  (set-fill-column 77)
   (turn-on-fic-mode)
-  (hs-minor-mode)
+  (hs-minor-mode 1)
   (column-number-mode 1)
   (column-marker-1 79)
+  (fringe-mode 'left-only)
+  (linum-mode)
+  (flyspell-prog-mode)
+;
+; Ooooh, this is nice, but I may get tired of it.
+;
+;  (glasses-mode 1)
 )
-(add-hook 'py-mode-hook 'my-py-mode-hook)
+
+(defun local-borg-mode-hook()
+  (interactive)
+  (hs-minor-mode 1)
+)
+
+(defun local-latex-mode-hook()
+  (interactive)
+  (set-fill-column 79)
+  (flyspell-mode 1)
+  (auto-fill-mode 1))
+
+
+(add-hook 'c++-mode-hook 'local-cpp-mode-hook)
+>>>>>>> 1489259ae6eb8b3a38c6d2a2c19a43a8f88a1ec9
+(add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
+(add-hook 'borg-mode-hook 'local-borg-mode-hook)
+(add-hook 'latex-mode-hook 'local-latex-mode-hook)
+;;============================================================
+;; PYTHON SETUP
+;============================================================
+(defun my-py-mode-hook()
+  (interactive)
+;  (c-subword-mode 1)
+  (turn-on-fic-mode)
+  (hs-minor-mode 1)
+  (column-number-mode 1)
+  (column-marker-1 79)
+  (flyspell-prog-mode)
+  (orgtbl-mode)
+)
+(add-hook 'python-mode-hook 'my-py-mode-hook)
+(set-variable 'python-indent 2)
+; from: /home/build/nonconf/google3/third_party/py/pylint/elisp/pylint.el
+(require 'compile)
+;(grok-init)
+
+;; adapted from pychecker for pylint
+(defun pylint-python-hook ()
+  (interactive)
+  (defun pylint ()
+    "Run pylint against the file behind the current buffer after
+    checking if unsaved buffers should be saved."
+
+    (interactive)
+    (let* ((file (buffer-file-name (current-buffer)))
+       (command (concat "gpylint --output-format=parseable \"" file "\"")))
+      (save-some-buffers (not compilation-ask-about-save) nil) ; save  files.
+      (compile-internal command "No more errors or warnings" "pylint")))
+  (local-set-key [f1] 'pylint)
+  )
+
+(add-hook 'python-mode-hook 'pylint-python-hook)
+;(global-set-key (kbd "C-M-,") gtags-show-callers)
+
+;;============================================================
+;; SEMANTICDB SETUP
+;;============================================================
+(global-ede-mode 1)                      ; Enable the Project management system
+;(semantic-load-enable-gaudy-code-helpers)      ; Enable prototype help and
+;                                               ; smart completion
+(setq semantic-stickyfunc-mode 1)
+(setq semantic-decoration-mode 1)
+(setq semantic-idle-completion-mode nil)
+;(global-srecode-minor-mode 1)            ; Enable template insertion menu
 
 ;(add-hook 'python-mode-hook 'turn-on-fic-mode)
+
+(require 'semantic-ia)
+(require 'semantic-gcc)
+(require 'semanticdb)
+(global-semanticdb-minor-mode 1)
+(semanticdb-enable-gnu-global-databases 'c-mode)
+(semanticdb-enable-gnu-global-databases 'c++-mode)
+;; Remove semanticdb-save-all-db-idle from the auto-save-hook.  It looks
+;; to be my stalling problem.  I blame NFS.
+(remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
+(set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
+
+
+;;
+;; TODO(lally): Run through ~/gitwork and invoke this for all members.
+;; I can use DESCRIPTION for :name.
+;;
+;(ede-cpp-root-project "qsi-cache-threadscape"
+;                      :name "Cache and Threadscape Stats"
+;                      :file "~/gitwork/qsi-cache-threadscape/google3/mustang/BUILD"
+;)
+;; See http://alexott.net/en/writings/emacs-devenv/EmacsCedet.html for details
+;; on what's in here.
+
+
+;(setq-mode-local c-mode semanticdb-find-default-throttle
+;                 '(project unloaded system recursive))
+
 
 
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 
+;;============================================================
+;; DIRED SETUP
+;;============================================================
+(add-hook 'dired-load-hook (lambda ()
+                             (progn
+                               (require 'dired-sort-menu)
+                               (require 'dired-sort-menu+)
+                               (require 'dired-sort-map))))
 (setq dired-omit-files
       (rx (or (seq bol (? ".") "#")         ;; emacs autosave files
               (seq bol "." (not (any "."))) ;; dot-files
@@ -197,28 +359,43 @@
 (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
 (column-marker-1 78)
 
+;;============================================================
+;; LINT, COMPILE AND TEST
+;;============================================================
+(defun lint-cl ()
+  (interactive) (compile "git5 --no-pager lint -d -v"))
+(defun get-cl-comments ()
+  (interactive) (compile "git5 comments -q"))
+(set-fill-column 77)
 (server-start)
 (display-time-mode)
-;(global-set-key (kbd "RET") 'newline-and-indent)
-(global-set-key (kbd "C-c C-h") 'hs-toggle-hiding)
+
+
 (set-variable 'comint-prompt-read-only 't)
 
-(setq cc-other-file-alist
-      `(("\\cpp$" (".hpp" ".h"))
-        ("\\.h$" (".c" ".cpp" ".cc"))
-        ("\\.hpp$" (".c" ".cpp" ".cc"))))
+(setq-default cc-other-file-alist
+              '(
+                ("\\.cc$"  (".hh" ".h"))
+                ("\\.hh$"  (".cc" ".C"))
 
-(defun other-window-backwards ()
-  (interactive)
-  (other-window -1))
+                ("\\.c$"   (".h"))
+                ("\\.h$"   (".c" ".cc" ".C" ".CC" ".cxx" ".cpp"))
 
-(global-set-key (kbd "C-c o") 'ff-find-other-file)
-(global-set-key (kbd "C-x O") 'other-window-backwards)
+                ("\\.C$"   (".H"  ".hh" ".h"))
+                ("\\.H$"   (".C"  ".CC"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; General Window Setup
-;;
+                ("\\.CC$"  (".HH" ".H"  ".hh" ".h"))
+                ("\\.HH$"  (".CC"))
+
+                ("\\.cxx$" (".hh" ".h"))
+                ("\\.cpp$" (".hpp" ".hh" ".h"))
+                ("\\.hpp$" (".cpp"))
+                ))
+
+
+;;============================================================
+;; GENERAL WINDOW SETUP
+;;============================================================
 
 ;
 ; Normal configuration stuff
@@ -226,30 +403,71 @@
 (tool-bar-mode 'nil)
 (transient-mark-mode t)
 
+;(setq p4-use-p4config-exclusively t)
 (ido-mode t)
 (set-fringe-mode '(1 . 1))
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
  '(display-time-mode t)
+ '(gdb-find-source-frame t)
+ '(gdb-many-windows t)
+ '(gdb-show-changed-values t)
+ '(gdb-speedbar-auto-raise t)
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
- '(org-capture-templates (quote (("p" "Python" entry (file "~/config/notes.org") "py: ") ("t" "TODO" entry (file "~/config/notes.org") "TODO "))))
+ '(inhibit-startup-screen t)
+ '(org-agenda-files (quote ("~/org/toplevel/habits.org" "~/org/toplevel/incoming.org" "~/org/toplevel/learning.org" "~/org/toplevel/monitoring.org" "~/org/toplevel/optimization.org" "~/org/toplevel/pending.org" "~/org/toplevel/research.org" "~/org/toplevel/unsorted.org" "~/org/project/onegig.org" "~/org/project/scoreboard.org" "~/org/project/thwack.org" "~/org/project/twenty.org")))
+ '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link org-learn org-panel)))
+ '(safe-local-variable-values (quote ((org-use-property-inheritance . t))))
+ '(show-paren-mode t)
  '(tool-bar-mode nil))
 
+(defun my-window-setup-hook (frame)
+  "Set window parameters, for those that don't seem to stick."
+  (set-fill-column 79)
+  (set-default-font
+   "-unknown-Anka/Coder Narrow-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
+  (set-face-attribute 'default nil :height 93)
+  (set-background-color "black")
+  (set-foreground-color "white")
+  (set-cursor-color "white")
+  (set-face-background 'region "midnight blue")
+  (show-paren-mode 1)
+  ; (set-face-background 'hl-line "#330")
+  (global-hl-line-mode 1)
+  )
+(add-hook 'after-make-frame-functions 'my-window-setup-hook)
+(my-window-setup-hook nil)
+
+(put 'narrow-to-region 'disabled nil)
+(set-variable 'mouse-autoselect-window nil)
+(setq-default ido-default-file-method 'selected-window)
+(setq-default display-buffer-reuse-frames 1)
+(set-fill-column 79)
+(column-marker-1 81)
+(global-font-lock-mode 1)
 (set-background-color "black")
 (set-foreground-color "white")
+(set-cursor-color "white")
 (set-face-background 'region "midnight blue")
-(set-face-background 'highlight "grey15")
-;(global-set-key [?\M-.] 'gtags-feeling-lucky)
+(show-paren-mode 1)
+(set-face-background 'hl-line "#330")
+(global-hl-line-mode 1)
 
-;(semantic-enable-gaudy-code-helpers)
+;(require 'icicles)
+;(require 'fuzzy-match)
+;(icy-mode 1)
+;(set-variable 'icicle-show-Completions-initially t)
+;(icicle-ido-like-mode 1)
 
-
+;;============================================================
+;; COMPILATION SETUP
+;;============================================================
 ;; Yummy, from: http://stringofbits.net/2009/08/emacs-23-dbus-and-libnotify/
 (require 'dbus)
 (defun send-desktop-notification (summary body timeout)
@@ -272,161 +490,174 @@
   (send-desktop-notification "emacs compile" message 30000))
 
 (setq compilation-finish-function 'pw/compile-notify)
-;(require 'icicles)
-;(require 'fuzzy-match)
-;(icy-mode 1)
-(put 'narrow-to-region 'disabled nil)
-;(set-variable 'icicle-show-Completions-initially t)
-; (set-variable 'mouse-autoselect-window nil)
-;(icicle-ido-like-mode 1)
-(setq-default ido-default-file-method 'selected-window)
-(setq-default display-buffer-reuse-frames 1)
-(set-fill-column 79)
-(column-marker-1 79)
-(global-font-lock-mode 1)
 
-;
-; GIT SETUP
+;;============================================================
+;; GIT SETUP
+;;============================================================
 ; https://wiki.corp.google.com/twiki/bin/view/Nonconf/GitAndEmacs
-(global-auto-revert-mode)
-(global-set-key [S-f12] 'magit-status)
+;(global-auto-revert-mode)
 
 
-;
-; ORG MODE SETUP
-;
-(require 'org-install)
-(global-font-lock-mode 1)                     ; for all buffers
-;(add-hook 'org-mode-hook 'turn-on-font-lock)  ; Org buffers only
-;(add-hook 'org-mode-hook 'turn-on-auto-fill)
-(add-hook 'org-mode-hook
-   (lambda()
-     (turn-on-font-lock)
-     (turn-on-auto-fill)))
+;;============================================================
+;; ORG MODE SETUP
+;;============================================================
+;(require 'org-install)
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
 
-; Setup some Org-mode agenda files.
-(setq org-agenda-files (list "/research/phd/planning.org"
-			     "/research/phd/torque/modeling.org"
-		             "~/public_html/blog.org" 
-			     "/research/phd/researchdef/writing.org"
-			     "/research/phd/pubs.org"))
+;;-------------------------
+;; This should be per-file!
+;;-------------------------
+;; Use      #+TODO: TODO(t) WAIT(w@/!) | DONE(d!) CANCELED(c@) (as an example)
+;; (setq org-todo-keywords
+;;       '((sequence "WAITING(w)" "OPTIONAL(o)" "BEGIN(b)" "UGLY(u)"a
+;;                   "CODEREVIEW(r)" "UPDATE(u)" "PERIPHERAL(p)" "TESTING(t)"
+;;                   "TOSUBMIT(s)" "DONE(d)")))
 
-;;----------------------------------------------------------------------
-;; LATEX
-;;----------------------------------------------------------------------
-
-(add-hook 'LaTeX-mode-hook
-   (lambda()
-     (flyspell-mode 1)
-     (turn-on-font-lock)
-     (turn-on-auto-fill)))
-
-;(add-hook 'LaTeX-mode-hook 'turn-on-auto-fill)
-;(add-hook 'LaTeX-mode-hook 'turn-on-font-lock)
-(global-set-key [(control \})] 'tex-close-latex-block)
-
-
-;;----------------------------------------------------------------------
-;; C/C++ Mode
-;;----------------------------------------------------------------------
-
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-hook 'c-mode-common-hook
-  (lambda()
-    (set-variable 'tab-width 4)
-    (set-variable 'c-basic-offset 4)
-    (turn-on-auto-fill)
-    (hs-minor-mode t)
-    (flyspell-prog-mode)
-    ))
-
-
-
-;; Midnight mode, a GC for unused buffers.
-(require 'midnight)
-
-
-;; Shove the function name at the top of the buffer, in the 'HeaderLine'
-;;(load "which-func")
-;;(which-func-mode 1)
-
-;;(delete (assoc 'which-func-mode mode-line-format) mode-line-format)
-;;(setq which-func-header-line-format
-;;              '(which-func-mode
-;;                ("" which-func-format
-;;                 )))
-;(defadvice which-func-ff-hook (after header-line activate)
-;  (when which-func-mode
-;    (delete (assoc 'which-func-mode mode-line-format) mode-line-format)
-;    (setq header-line-format which-func-header-line-format)))
-
-
-(set-variable 'mouse-autoselect-window 1)
-
-
-;; ORG Capture
-(setq org-directory "~/config")
-(setq org-default-notes-file (concat org-directory "/notes.org"))
-(define-key global-map "\C-cc" 'org-remember)
-
-(setq ido-max-directory-size 100000)
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cb" 'org-iswitchb)
-(global-set-key "\C-ct" 'org-time-stamp)
 (set-variable 'org-hide-leading-stars t)
-(setq org-default-notes-file "~/config/notes.org")
+(setq org-default-notes-file "~/org/unsorted.org")
 (define-key global-map "\C-cr" 'org-capture) ; 'r' for remember.
-(global-set-key "\M-\C-\\" 'comment-region)
-(global-set-key [C-tab] 'indent-region)
-(global-hl-line-mode 1)
-(set-face-background 'hl-line "#330")
 
-; g13-support
+;; ORG MOBILE
+;; ----------
+(setq org-mobile-directory "/scpc:lally@lal.ly:/home/lally/org")
+(setq org-log-into-drawer t)
 
+;; ORG AGENDA
+;; ----------
+(setq org-agenda-files (nconc (file-expand-wildcards "~/org/toplevel/*.org")
+                              (file-expand-wildcards "~/org/project/*.org")))
+(setq org-agenda-time-grid
+      '((weekly today require-timed remove-match)
+        "----------------"
+        (0400 0600 0800 1000 1200 1400 1600 1800 2000 2200 2359))
+      )
+(setq org-agenda-sorting-strategy
+      '((agenda time-up priority-down) ;; agenda should ignore category
+        (todo category-keep priority-down)
+        (tags category-keep priority-down)
+        (search category-keep))
+      )
+(setq org-agenda-to-appt t) ;; add appointments to the agenda view
+(setq org-agenda-window-setup 'current-window) ;; don't kill my window setup
+(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+(setq org-agenda-skip-deadline-prewarning-if-scheduled t)
+
+;(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . nil) (C . t) (R . t)))
+; (setq org-src-fontify-natively t)
+
+;; ORG EDIT HOOK
+;; -------------
+(defun my-org-hook ()
+  (interactive)
+  (auto-fill-mode 1)
+  (hl-line-mode 1)
+  (hs-minor-mode 1)
+  (column-number-mode 1)
+  (column-marker-1 79)
+)
+
+(add-hook 'org-mode-hook 'my-org-hook)
+
+;; ORG TEXT EXPORT
+;; ----------------
+;; Ref: http://orgmode.org/worg/org-contrib/org-export-generic.html
+;; NOTE: This doesn't work.
+;; (org-set-generic-type
+;;  "header-file-documentation"
+;;  '(:file-suffix     ".h"
+;;    :key-binding     ?D
+;;    :title-prefix    "//"
+;;    :title-suffix    "?="
+;;    :body-header-section-numbers nil
+;;    :body-section-header-prefix  "//\n"
+;;    :body-section-header-suffix ("?=" "?-")
+;;    :body-line-format "//  %s\n"
+;;    :body-line-wrap   75
+;;    ))
+
+
+;;============================================================
+;; g13-support
+;;============================================================
 (defun filename-of-path (n)
   (last (split-string n "/" 't)))
 
-(global-set-key "\C-\M-g" 'goto-line)
+;;============================================================
+;; EXPERIMENTAL
+;;============================================================
+;;(load-file "/home/build/eng/elisp/gfs.el")
+;;(gfs-enable-file-name-handler)
 
-;(setq load-path (cons "/usr/share/emacs/site-lisp/ess" load-path))
-;(load "/usr/share/emacs/site-lisp/ess/ess-site")
-(load "auctex.el" nil t t)
-(load "preview-latex.el" nil t t)
+;;  Keep these at the end, so that any failures here don't propagate
+;;  to other preferences above.
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 93 width condensed :foundry "unknown" :family "Anka/Coder Narrow"))))
+ '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
 
-(set-face-foreground 'mode-line-inactive "turquoise1")
-(set-face-background 'mode-line-inactive "black")
-(set-face-foreground 'mode-line "black")
-(set-face-background 'mode-line "turquoise1")
-(defalias 'rs 'replace-string)
+(set-background-color "black")
+(set-foreground-color "white")
+(set-cursor-color "white")
+(set-face-background 'region "midnight blue")
 
-;;
-;; Automatic Mode Selection
-(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
-(put 'set-goal-column 'disabled nil)
-
-; (add-to-list 'package-archives
-;             '("melpa" . "http://melpa.milkbox.net/packages/") t)
-
+<<<<<<< HEAD
   (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                            ("marmalade" . "http://marmalade-repo.org/packages/")
                            ("melpa" . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
 (require 'git-gutter)
+=======
+;;; This was installed by package-install.el.
+;;; This provides support for the package system and
+;;; interfacing with ELPA, the package archive.
+;;; Move this code earlier if you want to reference
+;;; packages in your .emacs.
+(require 'package)
+;; Any add to list for package-archives (to add marmalade or melpa) goes here
+(add-to-list 'package-archives
+    '("marmalade" .
+      "http://marmalade-repo.org/packages/"))
+(package-initialize)
 
-;; If you enable global minor mode
-(global-git-gutter-mode t)
+;;============================================================
+;; KEYBINDINGS
+;;============================================================
 
-;; If you enable git-gutter-mode for some modes
-(add-hook 'LaTeX-mode-hook 'git-gutter-mode)
+(global-set-key (kbd "C-x O") 'reverse-other-window)
+(global-set-key "\C-\M-g" 'goto-line)
+>>>>>>> 1489259ae6eb8b3a38c6d2a2c19a43a8f88a1ec9
 
-(global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
-(global-set-key (kbd "C-x v =") 'git-gutter:popup-diff)
+(global-set-key (kbd "C-M-<up>") 'windmove-up)
+(global-set-key (kbd "C-M-<down>") 'windmove-down)
+(global-set-key (kbd "C-M-<right>") 'windmove-right)
+(global-set-key (kbd "C-M-<left>") 'windmove-left)
 
-;; Jump to next/previous hunk
-(global-set-key (kbd "C-x p") 'git-gutter:previous-hunk)
-(global-set-key (kbd "C-x n") 'git-gutter:next-hunk)
+(global-unset-key (kbd "C-x g"))
+(global-set-key (kbd "C-x g l") 'lint-cl)
+(global-set-key (kbd "C-x g c") 'get-cl-comments)
 
-;; Revert current hunk
-(global-set-key (kbd "C-x r") 'git-gutter:revert-hunk)
+(global-set-key [f2] 'previous-error)
+(global-set-key [f3] 'next-error)
+(global-set-key [f12] 'compile)
+(global-set-key [S-f12] 'magit-status)
+
+;(global-set-key (kbd "RET") 'newline-and-indent)
+(global-set-key (kbd "C-c C-h") 'hs-toggle-hiding)
+(global-set-key (kbd "M-R") 'revert-buffer)
+(global-set-key (kbd "M-i") 'ido-goto-symbol)
+(global-set-key (kbd "C-c o") 'ff-find-other-file)
+
+(global-set-key (kbd "C-c i") 'my-increment-number-decimal)
+(global-set-key "\M-\C-\\" 'comment-region)
+(global-set-key [C-tab] 'indent-region)
+(global-set-key [?\M-.] 'gtags-feeling-lucky)
+(global-set-key [?\M-.] 'gtags-show-tag-locations)
+(global-set-key [?\M-*] 'gtags-pop-tag)
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-iswitchb)
+(global-set-key "\C-ct" 'org-time-stamp)
