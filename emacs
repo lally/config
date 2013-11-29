@@ -81,6 +81,79 @@ the form (display key-protocol hex-string)"
 
 (global-set-key [f5] 'magit-status)
 
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 81 :width condensed :foundry "unknown" :family "Anka/Coder Narrow"))))
+ '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
+
+
+;; ALIASES
+(defalias 'rs 'replace-string)
+(defalias 'ar 'align-regexp)
+(put 'scroll-left 'disabled nil)
+
+;; GDB Setup
+(setq gdb-command-name "gdb --nx")
+
+(if (file-exists-p "/home/build")
+    (progn
+      ;;============================================================
+      ;; GOOGLE SETUP
+      ;;============================================================
+      (load-file "/home/build/public/eng/elisp/google.el")
+                                        ;Some extra local packages are available that are not included by
+                                        ;google.el by default. You need to require those modules explicitly if
+                                        ;you want their functionality. These include:
+      (require 'google)
+      (require 'compilation-colorization) ;; colorizes output of (i)grep
+      (require 'rotate-clients)           ;; google-rotate-client
+      (require 'rotate-among-files)       ;; google-rotate-among-files
+      (require 'googlemenu)               ;; handy Google menu bar
+      (require 'google3)                  ;; magically set paths for
+      ;; compiling google3 code
+      (require 'google-imports) ;; M-x google-imports-iwyu
+      (load-library "gm-prepare")
+      (require 'protobuf-mode)            ;; protocol buffers support
+      )
+)
+
+;; Locally added - http://www.corp.google.com/eng/google_emacs.html
+(add-to-list 'load-path "~/.emacs.d/site-lisp")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/icicles")
+; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/lisp")
+; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/contrib/lisp")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
+(add-to-list 'load-path "/usr/local/share/emacs23/site-lisp")
+(if (file-exists-p "/usr/local/google")
+    (add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
+)
+;; Stuff in config/libs/*
+(add-to-list 'load-path "~/config/libs/site-lisp")
+(add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
+;; magit now ships with emacs.
+;(add-to-list 'load-path "~/config/libs/site-lisp/magit-0.8.2")
+(require 'dired-details+)
+(require 'dired-x)
+(require 'column-marker)
+(require 'fic-mode)
+(require 'magit)
+(require 'buff-menu+)
+;(require 'dbgr)
+(require 'vline)
+(require 'org-install)
+(require 'org-habit)
+(require 'haskell-mode)
+
+
+(autoload 'pymacs-apply "pymacs")
+(autoload 'pymacs-call "pymacs")
+(autoload 'pymacs-eval "pymacs" nil t)
+(autoload 'pymacs-exec "pymacs" nil t)
+(autoload 'pymacs-load "pymacs" nil t)
+
 ;;---------------------------------------------------------------------- 
 ;; Haskell mode
 ;;----------------------------------------------------------------------
@@ -100,90 +173,17 @@ the form (display key-protocol hex-string)"
 ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 (add-hook 'haskell-mode-hook 'font-lock-mode)
 (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 81 :width condensed :foundry "unknown" :family "Anka/Coder Narrow")))))
-
-
-;; ALIASES
-(defalias 'rs 'replace-string)
-(defalias 'ar 'align-regexp)
-(put 'scroll-left 'disabled nil)
-
-;; GDB Setup
-(setq gdb-command-name "gdb --nx")
-
-(if 
-    (file-exists-p "/home/build")
-
-    (progn
-      ;;============================================================
-      ;; GOOGLE SETUP
-      ;;============================================================
-      (load-file "/home/build/public/eng/elisp/google.el")
-                                        ;Some extra local packages are available that are not included by
-                                        ;google.el by default. You need to require those modules explicitly if
-                                        ;you want their functionality. These include:
-      (require 'google)
-      (require 'compilation-colorization) ;; colorizes output of (i)grep
-      (require 'rotate-clients)           ;; google-rotate-client
-      (require 'rotate-among-files)       ;; google-rotate-among-files
-      (require 'googlemenu)               ;; handy Google menu bar
-      (require 'google3)                  ;; magically set paths for
-      ;; compiling google3 code
-      (require 'google-imports) ;; M-x google-imports-iwyu
-      )
-)
-
-;; Locally added - http://www.corp.google.com/eng/google_emacs.html
-(add-to-list 'load-path "~/.emacs.d/site-lisp")
-(add-to-list 'load-path "~/.emacs.d/site-lisp/icicles")
-; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/lisp")
-; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/contrib/lisp")
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
-(add-to-list 'load-path "/usr/local/share/emacs23/site-lisp")
-(add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
-;; Stuff in config/libs/*
-(add-to-list 'load-path "~/config/libs/site-lisp")
-(add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
-(add-to-list 'load-path "~/config/libs/site-lisp/magit-0.8.2")
-(require 'googlemenu)
-(require 'dired-details+)
-(require 'dired-x)
-(require 'column-marker)
-(require 'fic-mode)
-(require 'magit)
-(require 'buff-menu+)
-;(require 'dbgr)
-(require 'protobuf-mode)            ;; protocol buffers support
-(require 'vline)
-(require 'org-install)
-(require 'org-habit)
-(require 'haskell-mode)
-(load-library "gm-prepare")
-
-
-
-(autoload 'pymacs-apply "pymacs")
-(autoload 'pymacs-call "pymacs")
-(autoload 'pymacs-eval "pymacs" nil t)
-(autoload 'pymacs-exec "pymacs" nil t)
-(autoload 'pymacs-load "pymacs" nil t)
-
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
 
-(load-file "/usr/local/google/src/cedet-1.1/common/cedet.el")
+(if (file-exists-p "/usr/local/google")
+    (load-file "/usr/local/google/src/cedet-1.1/common/cedet.el")
+)
 ;(require 'light-symbol)
-<<<<<<< HEAD
 ;(fringe-mode "left-only")
 (add-hook 'c++-mode-hook 'turn-on-fic-mode)
-=======
-(fringe-mode 'left-only)
+(fringe-mode '(16 . 0))
+
 (setq ido-max-directory-size 100000) ;; in _bytes_, not dirents.
 (setq gtags-use-gtags-mixer nil)
 
@@ -252,7 +252,6 @@ the form (display key-protocol hex-string)"
 
 
 (add-hook 'c++-mode-hook 'local-cpp-mode-hook)
->>>>>>> 1489259ae6eb8b3a38c6d2a2c19a43a8f88a1ec9
 (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
 (add-hook 'borg-mode-hook 'local-borg-mode-hook)
 (add-hook 'latex-mode-hook 'local-latex-mode-hook)
@@ -306,9 +305,9 @@ the form (display key-protocol hex-string)"
 
 ;(add-hook 'python-mode-hook 'turn-on-fic-mode)
 
-(require 'semantic-ia)
-(require 'semantic-gcc)
-(require 'semanticdb)
+(require 'semantic/ia)
+; (require 'semantic/gcc)
+(require 'semantic/db)
 (global-semanticdb-minor-mode 1)
 (semanticdb-enable-gnu-global-databases 'c-mode)
 (semanticdb-enable-gnu-global-databases 'c++-mode)
@@ -407,10 +406,10 @@ the form (display key-protocol hex-string)"
 (ido-mode t)
 (set-fringe-mode '(1 . 1))
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
  '(display-time-mode t)
@@ -418,6 +417,7 @@ the form (display key-protocol hex-string)"
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
  '(gdb-speedbar-auto-raise t)
+ '(haskell-program-name "cabal-dev ghci")
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
  '(inhibit-startup-screen t)
@@ -591,26 +591,18 @@ the form (display key-protocol hex-string)"
 
 ;;  Keep these at the end, so that any failures here don't propagate
 ;;  to other preferences above.
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 93 width condensed :foundry "unknown" :family "Anka/Coder Narrow"))))
- '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
+
 
 (set-background-color "black")
 (set-foreground-color "white")
 (set-cursor-color "white")
 (set-face-background 'region "midnight blue")
 
-<<<<<<< HEAD
-  (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                           ("marmalade" . "http://marmalade-repo.org/packages/")
-                           ("melpa" . "http://melpa.milkbox.net/packages/")))
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                         ("marmalade" . "http://marmalade-repo.org/packages/")
+                         ("melpa" . "http://melpa.milkbox.net/packages/")))
 (package-initialize)
 (require 'git-gutter)
-=======
 ;;; This was installed by package-install.el.
 ;;; This provides support for the package system and
 ;;; interfacing with ELPA, the package archive.
@@ -629,7 +621,6 @@ the form (display key-protocol hex-string)"
 
 (global-set-key (kbd "C-x O") 'reverse-other-window)
 (global-set-key "\C-\M-g" 'goto-line)
->>>>>>> 1489259ae6eb8b3a38c6d2a2c19a43a8f88a1ec9
 
 (global-set-key (kbd "C-M-<up>") 'windmove-up)
 (global-set-key (kbd "C-M-<down>") 'windmove-down)

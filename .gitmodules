@@ -1,0 +1,3 @@
+[submodule "libs/xmonad"]
+	path = libs/xmonad
+	url = https://github.com/reenberg/xmonad.git
