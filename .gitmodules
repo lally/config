@@ -1,3 +1,15 @@
 [submodule "libs/xmonad"]
 	path = libs/xmonad
 	url = https://github.com/reenberg/xmonad.git
+[submodule "libs/git-prompt"]
+	path = libs/git-prompt
+	url = https://github.com/lvv/git-prompt.git
+[submodule "libs/org-mode"]
+	path = libs/org-mode
+	url = git://orgmode.org/org-mode.git
+[submodule "haskell-mode"]
+	path = haskell-mode
+	url = https://github.com/haskell/haskell-mode/
+[submodule "libs/site-lisp/haskell-mode"]
+	path = libs/site-lisp/haskell-mode
+	url = https://github.com/haskell/haskell-mode.git
