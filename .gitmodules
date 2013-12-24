@@ -13,3 +13,6 @@
 [submodule "libs/site-lisp/haskell-mode"]
 	path = libs/site-lisp/haskell-mode
 	url = https://github.com/haskell/haskell-mode.git
+[submodule "libs/powerline"]
+	path = libs/powerline
+	url = https://github.com/Lokaltog/powerline.git
