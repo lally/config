@@ -417,6 +417,7 @@ the form (display key-protocol hex-string)"
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
  '(gdb-speedbar-auto-raise t)
+ '(haskell-font-lock-symbols (quote unicode))
  '(haskell-program-name "cabal-dev ghci")
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))

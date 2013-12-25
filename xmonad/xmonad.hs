@@ -368,7 +368,7 @@ managementHooks = [
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = mappend fullscreenEventHook ewmhDesktopsEventHook -- fullscreenEventHook
+myEventHook = fullscreenEventHook -- mappend fullscreenEventHook ewmhDesktopsEventHook -- 
 
 ------------------------------------------------------------------------
 -- Status bars and logging
