@@ -176,9 +176,33 @@ the form (display key-protocol hex-string)"
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
 
-(if (file-exists-p "/usr/local/google")
+(if (file-exists-p "/usr/local/google/src/cedet-1.1/common/cedet.el")
     (load-file "/usr/local/google/src/cedet-1.1/common/cedet.el")
+	;;============================================================
+	;; SEMANTICDB SETUP
+	;;============================================================
+	(global-ede-mode 1)                      ; Enable the Project management system
+	;(semantic-load-enable-gaudy-code-helpers)      ; Enable prototype help and
+	;                                               ; smart completion
+	(setq semantic-stickyfunc-mode 1)
+	(setq semantic-decoration-mode 1)
+	(setq semantic-idle-completion-mode nil)
+	;(global-srecode-minor-mode 1)            ; Enable template insertion menu
+
+	;(add-hook 'python-mode-hook 'turn-on-fic-mode)
+
+	(require 'semantic/ia)
+	; (require 'semantic/gcc)
+	(require 'semantic/db)
+	(global-semanticdb-minor-mode 1)
+	(semanticdb-enable-gnu-global-databases 'c-mode)
+	(semanticdb-enable-gnu-global-databases 'c++-mode)
+	;; Remove semanticdb-save-all-db-idle from the auto-save-hook.  It looks
+	;; to be my stalling problem.  I blame NFS.
+	(remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
+	(set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
 )
+
 ;(require 'light-symbol)
 ;(fringe-mode "left-only")
 (add-hook 'c++-mode-hook 'turn-on-fic-mode)
@@ -292,29 +316,6 @@ the form (display key-protocol hex-string)"
 (add-hook 'python-mode-hook 'pylint-python-hook)
 ;(global-set-key (kbd "C-M-,") gtags-show-callers)
 
-;;============================================================
-;; SEMANTICDB SETUP
-;;============================================================
-(global-ede-mode 1)                      ; Enable the Project management system
-;(semantic-load-enable-gaudy-code-helpers)      ; Enable prototype help and
-;                                               ; smart completion
-(setq semantic-stickyfunc-mode 1)
-(setq semantic-decoration-mode 1)
-(setq semantic-idle-completion-mode nil)
-;(global-srecode-minor-mode 1)            ; Enable template insertion menu
-
-;(add-hook 'python-mode-hook 'turn-on-fic-mode)
-
-(require 'semantic/ia)
-; (require 'semantic/gcc)
-(require 'semantic/db)
-(global-semanticdb-minor-mode 1)
-(semanticdb-enable-gnu-global-databases 'c-mode)
-(semanticdb-enable-gnu-global-databases 'c++-mode)
-;; Remove semanticdb-save-all-db-idle from the auto-save-hook.  It looks
-;; to be my stalling problem.  I blame NFS.
-(remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
-(set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
 
 
 ;;
@@ -598,23 +599,26 @@ the form (display key-protocol hex-string)"
 (set-cursor-color "white")
 (set-face-background 'region "midnight blue")
 
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("marmalade" . "http://marmalade-repo.org/packages/")
-                         ("melpa" . "http://melpa.milkbox.net/packages/")))
-(package-initialize)
-(require 'git-gutter)
-;;; This was installed by package-install.el.
-;;; This provides support for the package system and
-;;; interfacing with ELPA, the package archive.
-;;; Move this code earlier if you want to reference
-;;; packages in your .emacs.
-(require 'package)
-;; Any add to list for package-archives (to add marmalade or melpa) goes here
-(add-to-list 'package-archives
-    '("marmalade" .
-      "http://marmalade-repo.org/packages/"))
-(package-initialize)
-
+;; Package-Manager stuff, Emacs 24+ only
+(if (> emacs-major-version 24)
+    (progn
+	(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+				 ("marmalade" . "http://marmalade-repo.org/packages/")
+				 ("melpa" . "http://melpa.milkbox.net/packages/")))
+	(package-initialize)
+	(require 'git-gutter)
+	;;; This was installed by package-install.el.
+	;;; This provides support for the package system and
+	;;; interfacing with ELPA, the package archive.
+	;;; Move this code earlier if you want to reference
+	;;; packages in your .emacs.
+	(require 'package)
+	;; Any add to list for package-archives (to add marmalade or melpa) goes here
+	(add-to-list 'package-archives
+	    '("marmalade" .
+	      "http://marmalade-repo.org/packages/"))
+	(package-initialize)
+))
 ;;============================================================
 ;; KEYBINDINGS
 ;;============================================================
