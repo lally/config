@@ -82,10 +82,10 @@ the form (display key-protocol hex-string)"
 (global-set-key [f5] 'magit-status)
 
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 81 :width condensed :foundry "unknown" :family "Anka/Coder Narrow"))))
  '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
 
@@ -145,6 +145,7 @@ the form (display key-protocol hex-string)"
 (require 'vline)
 (require 'org-install)
 (require 'org-habit)
+(require 'org-protocol)
 (require 'haskell-mode)
 
 
@@ -399,7 +400,7 @@ the form (display key-protocol hex-string)"
 
 ;
 ; Normal configuration stuff
-(scroll-bar-mode 'nil)
+(scroll-bar-mode -1)
 (tool-bar-mode 'nil)
 (transient-mark-mode t)
 
@@ -407,10 +408,10 @@ the form (display key-protocol hex-string)"
 (ido-mode t)
 (set-fringe-mode '(1 . 1))
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
  '(display-time-mode t)
@@ -423,6 +424,7 @@ the form (display key-protocol hex-string)"
  '(ido-default-file-method (quote selected-window))
  '(inhibit-startup-screen t)
  '(org-agenda-files (quote ("~/org/toplevel/habits.org" "~/org/toplevel/incoming.org" "~/org/toplevel/learning.org" "~/org/toplevel/monitoring.org" "~/org/toplevel/optimization.org" "~/org/toplevel/pending.org" "~/org/toplevel/research.org" "~/org/toplevel/unsorted.org" "~/org/project/onegig.org" "~/org/project/scoreboard.org" "~/org/project/thwack.org" "~/org/project/twenty.org")))
+ '(org-enforce-todo-dependencies t)
  '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link org-learn org-panel)))
  '(safe-local-variable-values (quote ((org-use-property-inheritance . t))))
  '(show-paren-mode t)
@@ -505,6 +507,8 @@ the form (display key-protocol hex-string)"
 ;(require 'org-install)
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.h$" . c++-mode))
 
 ;;-------------------------
 ;; This should be per-file!
@@ -516,8 +520,18 @@ the form (display key-protocol hex-string)"
 ;;                   "TOSUBMIT(s)" "DONE(d)")))
 
 (set-variable 'org-hide-leading-stars t)
+
+;; ORG CAPTURE
+;; -----------
 (setq org-default-notes-file "~/org/unsorted.org")
 (define-key global-map "\C-cr" 'org-capture) ; 'r' for remember.
+(setq org-protocol-default-template-key "l")
+(setq org-capture-templates
+ '(("t" "Todo" entry (file+headline "~/org/unsorted.org" "Tasks")
+        "* TODO %?\n  %i\n  %a")
+   ("l" "Link" entry (file+olp "~/org/intel/unsorted.org" "Web Links")
+        "* %a\n %?\n %i")))
+
 
 ;; ORG MOBILE
 ;; ----------

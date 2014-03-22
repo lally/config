@@ -8,6 +8,7 @@
 import XMonad
 import Control.Exception (bracket)
 import Data.Monoid
+import Graphics.X11.Xinerama
 import System.Exit
 import System.Process (readProcessWithExitCode, system)
 
@@ -393,24 +394,27 @@ myStartupHook = return ()
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
-main = xmonad kde4Config {
-      -- simple stuff
-        terminal           = myTerminal,
-        focusFollowsMouse  = myFocusFollowsMouse,
-        borderWidth        = myBorderWidth,
-        modMask            = myModMask,
-        workspaces         = myWorkspaces,
-        normalBorderColor  = myNormalBorderColor,
-        focusedBorderColor = myFocusedBorderColor,
+main = do if not Graphics.X11.Xinerama.compiledWithXinerama 
+            then putStrLn "WARNING: Xinerama was not compiled in."
+            else return ()
+	  return $ xmonad kde4Config {
+	      -- simple stuff
+		terminal           = myTerminal,
+		focusFollowsMouse  = myFocusFollowsMouse,
+		borderWidth        = myBorderWidth,
+		modMask            = myModMask,
+		workspaces         = myWorkspaces,
+		normalBorderColor  = myNormalBorderColor,
+		focusedBorderColor = myFocusedBorderColor,
 
-      -- key bindings
-        keys               = myKeys,
-        mouseBindings      = myMouseBindings,
+	      -- key bindings
+		keys               = myKeys,
+		mouseBindings      = myMouseBindings,
 
-      -- hooks, layouts
-        layoutHook         = desktopLayoutModifiers (myLayout), 
-        manageHook         = myManageHook,
-        handleEventHook    = myEventHook,
-        startupHook        = myStartupHook
-    }
+	      -- hooks, layouts
+		layoutHook         = desktopLayoutModifiers (myLayout), 
+		manageHook         = myManageHook,
+		handleEventHook    = myEventHook,
+		startupHook        = myStartupHook
+	    }
 
