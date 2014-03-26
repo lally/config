@@ -65,7 +65,8 @@ the form (display key-protocol hex-string)"
 ;; When the site-libs are present
 (when (file-accessible-directory-p "~/config/libs")
   (progn
-    (add-to-list 'load-path "~/config/libs/magit-0.8.2")))
+    (add-to-list 'load-path "~/config/libs/magit-0.8.2")
+    (add-to-list 'load-path "/ulg/share/emacs/site-lisp/emacspeak/lisp/g-client")))
 
 
 ;; IDO, for my enhanced buffer management.
@@ -97,7 +98,7 @@ the form (display key-protocol hex-string)"
 
 ;; GDB Setup
 (setq gdb-command-name "gdb --nx")
-
+(setq gdb-create-source-file-list nil)
 (if (file-exists-p "/home/build")
     (progn
       ;;============================================================
@@ -135,14 +136,14 @@ the form (display key-protocol hex-string)"
 (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
 ;; magit now ships with emacs.
 ;(add-to-list 'load-path "~/config/libs/site-lisp/magit-0.8.2")
-(require 'dired-details+)
-(require 'dired-x)
+; (require 'dired-details+)
+; (require 'dired-x)
 (require 'column-marker)
 (require 'fic-mode)
 (require 'magit)
-(require 'buff-menu+)
+; (require 'buff-menu+)
 ;(require 'dbgr)
-(require 'vline)
+; (require 'vline)
 (require 'org-install)
 (require 'org-habit)
 (require 'org-protocol)
@@ -255,7 +256,7 @@ the form (display key-protocol hex-string)"
   (hs-minor-mode 1)
   (column-number-mode 1)
   (column-marker-1 79)
-  (fringe-mode 'left-only)
+  (set-fringe-mode '(1 . 1))
   (linum-mode)
   (flyspell-prog-mode)
 ;
@@ -342,22 +343,22 @@ the form (display key-protocol hex-string)"
 ;;============================================================
 ;; DIRED SETUP
 ;;============================================================
-(add-hook 'dired-load-hook (lambda ()
-                             (progn
-                               (require 'dired-sort-menu)
-                               (require 'dired-sort-menu+)
-                               (require 'dired-sort-map))))
-(setq dired-omit-files
-      (rx (or (seq bol (? ".") "#")         ;; emacs autosave files
-              (seq bol "." (not (any "."))) ;; dot-files
-              (seq "~" eol)                 ;; backup-files
-              (seq bol "CVS" eol)           ;; CVS dirs
-              )))
-(setq dired-omit-extensions
-      (append dired-latex-unclean-extensions
-              dired-bibtex-unclean-extensions
-              dired-texinfo-unclean-extensions))
-(add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
+;; (add-hook 'dired-load-hook (lambda ()
+;;                              (progn
+;;                                (require 'dired-sort-menu)
+;;                                (require 'dired-sort-menu+)
+;;                                (require 'dired-sort-map))))
+;; (setq dired-omit-files
+;;       (rx (or (seq bol (? ".") "#")         ;; emacs autosave files
+;;               (seq bol "." (not (any "."))) ;; dot-files
+;;               (seq "~" eol)                 ;; backup-files
+;;               (seq bol "CVS" eol)           ;; CVS dirs
+;;               )))
+;; (setq dired-omit-extensions
+;;       (append dired-latex-unclean-extensions
+;;               dired-bibtex-unclean-extensions
+;;               dired-texinfo-unclean-extensions))
+;; (add-hook 'dired-mode-hook (lambda () (dired-omit-mode 1)))
 (column-marker-1 78)
 
 ;;============================================================
