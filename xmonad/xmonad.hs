@@ -10,6 +10,7 @@ import Control.Exception (bracket)
 import Data.Monoid
 import Graphics.X11.Xinerama
 import System.Exit
+import System.IO
 import System.Process (readProcessWithExitCode, system)
 
 import XMonad.Actions.GridSelect
@@ -20,6 +21,7 @@ import XMonad.Config.Kde
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
 
+import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.EZConfig
 import XMonad.Util.Themes
 
@@ -392,29 +394,44 @@ myStartupHook = return ()
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
+{-
+<p>xmproc &lt;- spawnPipe "/usr/bin/xmobar /home/blackgod/.xmobarrc"</p>
+<p>xmonad $ defaultConfig</p>
+<p>{ manageHook = manageDocks &lt;+&gt; myManageHook -- make sure to include myManageHook definition from above</p>
+<p>&lt;+&gt; manageHook defaultConfig</p>
+<p>, layoutHook = avoidStruts  $  layoutHook defaultConfig</p>
+<p>, logHook = dynamicLogWithPP xmobarPP</p>
+<p>{ ppOutput = hPutStrLn xmproc</p>
+<p>, ppTitle = xmobarColor "grey" "" . shorten 50</p>
+<p>}</p>
+
+-}
+
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do if not Graphics.X11.Xinerama.compiledWithXinerama 
             then putStrLn "WARNING: Xinerama was not compiled in."
-            else return ()
-	  return $ xmonad kde4Config {
-	      -- simple stuff
-		terminal           = myTerminal,
-		focusFollowsMouse  = myFocusFollowsMouse,
-		borderWidth        = myBorderWidth,
-		modMask            = myModMask,
-		workspaces         = myWorkspaces,
-		normalBorderColor  = myNormalBorderColor,
-		focusedBorderColor = myFocusedBorderColor,
+            else do  xmproc <- spawnPipe "/usr/bin/xmobar /ulg/home/lally/config/xmobarrc"
+                     xmonad kde4Config {
+	              -- simple stuff
+	                terminal           = myTerminal,
+	                focusFollowsMouse  = myFocusFollowsMouse,
+	                borderWidth        = myBorderWidth,
+	                modMask            = myModMask,
+	                workspaces         = myWorkspaces,
+	                normalBorderColor  = myNormalBorderColor,
+	                focusedBorderColor = myFocusedBorderColor,
 
-	      -- key bindings
-		keys               = myKeys,
-		mouseBindings      = myMouseBindings,
+	              -- key bindings
+	                keys               = myKeys,
+	                mouseBindings      = myMouseBindings,
 
-	      -- hooks, layouts
-		layoutHook         = desktopLayoutModifiers (myLayout), 
-		manageHook         = myManageHook,
-		handleEventHook    = myEventHook,
-		startupHook        = myStartupHook
-	    }
+	              -- hooks, layouts
+	                layoutHook         = desktopLayoutModifiers (myLayout), 
+			logHook = dynamicLogWithPP xmobarPP { ppOutput = hPutStrLn xmproc
+			                                    , ppTitle = xmobarColor "grey" "" . shorten 50},
+	                manageHook         = myManageHook,
+	                handleEventHook    = myEventHook,
+	                startupHook        = myStartupHook
+	             }  
 
