@@ -394,19 +394,6 @@ myStartupHook = return ()
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
-{-
-<p>xmproc &lt;- spawnPipe "/usr/bin/xmobar /home/blackgod/.xmobarrc"</p>
-<p>xmonad $ defaultConfig</p>
-<p>{ manageHook = manageDocks &lt;+&gt; myManageHook -- make sure to include myManageHook definition from above</p>
-<p>&lt;+&gt; manageHook defaultConfig</p>
-<p>, layoutHook = avoidStruts  $  layoutHook defaultConfig</p>
-<p>, logHook = dynamicLogWithPP xmobarPP</p>
-<p>{ ppOutput = hPutStrLn xmproc</p>
-<p>, ppTitle = xmobarColor "grey" "" . shorten 50</p>
-<p>}</p>
-
--}
-
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do if not Graphics.X11.Xinerama.compiledWithXinerama 
