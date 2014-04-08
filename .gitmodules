@@ -16,3 +16,6 @@
 [submodule "libs/org-sync"]
 	path = libs/org-sync
 	url = git://orgmode.org/org-sync.git
+[submodule "tools/xmobar"]
+	path = tools/xmobar
+	url = https://github.com/jaor/xmobar.git

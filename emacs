@@ -181,20 +181,12 @@ the form (display key-protocol hex-string)"
 ;(load "~/local/haskell-mode-2.4/haskell-site-file")
 ;(load "~/local/share/emacs/site-lisp/twit.el")
 (require 'inf-haskell)
-(add-hook 'haskell-mode-hook
-          (lambda()
-            (turn-on-haskell-doc-mode t)
-            (turn-on-haskell-simple-indent t)
-            (turn-on-font-lock t)
-            (imenu-add-menubar-index t)))
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
-;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 (add-hook 'haskell-mode-hook 'font-lock-mode)
 (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-
 
 ;(require 'light-symbol)
 ;(fringe-mode "left-only")
@@ -238,7 +230,7 @@ the form (display key-protocol hex-string)"
 
 
 ;;============================================================
-;; C++ SETUP
+;; LANGUAGE HOOK SETUP
 ;;============================================================
 (defun local-cpp-mode-hook()
   (interactive)
@@ -267,11 +259,23 @@ the form (display key-protocol hex-string)"
   (flyspell-mode 1)
   (auto-fill-mode 1))
 
+(defun local-typescript-mode-hook()
+  (interactive)
+  (tss-setup-current-buffer)
+  (hs-minor-mode 1)
+)
+
+(defun local-js-mode-hook()
+  (interactive)
+  (hs-minor-mode 1)
+)
 
 (add-hook 'c++-mode-hook 'local-cpp-mode-hook)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
 (add-hook 'borg-mode-hook 'local-borg-mode-hook)
 (add-hook 'latex-mode-hook 'local-latex-mode-hook)
+(add-hook 'typescript-mode-hook 'local-typescript-mode-hook)
+(add-hook 'js-mode-hook 'local-js-mode-hook)
 ;;============================================================
 ;; PYTHON SETUP
 ;============================================================
@@ -400,10 +404,10 @@ the form (display key-protocol hex-string)"
 (ido-mode t)
 (set-fringe-mode '(1 . 1))
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
  '(display-time-mode t)
@@ -420,7 +424,9 @@ the form (display key-protocol hex-string)"
  '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link org-learn org-panel)))
  '(safe-local-variable-values (quote ((org-use-property-inheritance . t))))
  '(show-paren-mode t)
- '(tool-bar-mode nil))
+ '(tool-bar-mode nil)
+ '(tss-jump-to-definition-key "C->")
+ '(tss-popup-help-key "C-:"))
 
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
@@ -499,8 +505,14 @@ the form (display key-protocol hex-string)"
 ;(require 'org-install)
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.h$" . c++-mode))
+
+;;============================================================
+;; Typescript setup
+;;============================================================
+(require 'tss)
 
 ;;-------------------------
 ;; This should be per-file!
