@@ -21,8 +21,9 @@ import XMonad.Config.Kde
 import XMonad.Config.Gnome
 import XMonad.Config.Desktop
 
-import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.EZConfig
+import XMonad.Util.Loggers
+import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.Themes
 
 import XMonad.Hooks.DynamicLog
@@ -52,7 +53,7 @@ myFocusFollowsMouse = True
 
 -- Width of the window border in pixels.
 --
-myBorderWidth   = 4
+myBorderWidth   = 2
 
 -- modMask lets you specify which modkey you want to use. The default
 -- is mod1Mask ("left alt").  You may also consider using mod3Mask
@@ -60,6 +61,9 @@ myBorderWidth   = 4
 -- "windows key" is usually mod4Mask.
 --
 myModMask       = mod4Mask
+
+fontAt :: Int -> String
+fontAt num = "xft:Pragmata Pro:pixelsize=" ++ (show num)
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -70,8 +74,8 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["emacs","web","term","firefox","nx/misc",
-                   "emacs2","web2","term2","misc", "misc2"]
+myWorkspaces    = ["emacs","web","term","personal","doc read",
+                   "emacs2","web2","term2","misc", "config"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
@@ -128,7 +132,7 @@ getProdAccess = do
     case status of
         ExitSuccess -> return ()
         otherwise ->
-            spawnAndDo doCenterFloat "xterm -title prodaccess -geometry 60x5 -e prodaccess -s"
+            spawnAndDo doCenterFloat "xterm -title prodaccess -geometry 60x5 -e prodaccess -g -s"
 
 
 ------------------------------------------------------------------------
@@ -210,13 +214,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
    -- later.  Either way, see
    -- http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html
 
-    -- Logout
-    -- , ((modm .|. shiftMask, xK_q     ),
-    --                  spawn "gnome-session-save --gui --logout-dialog")
-
-    -- Fetch OTP
-    -- , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
-
     -- lock
     , ((modm .|. shiftMask, xK_l     ),
                   spawn "qdbus org.freedesktop.ScreenSaver /ScreenSaver Lock")
@@ -290,7 +287,7 @@ myTheme = newTheme { themeName = "tronTheme"
                              , decoHeight = 24
                              , decoWidth = 300
 --                             , fontName = "xft:LMSansDemiCond10:pixelsize=12"
-                             , fontName = "xft:Anka/Coder Condensed:pixelsize=12"
+                             , fontName = "xft:Pragmata Pro:pixelsize=12"
                              }
                    }
 
@@ -394,12 +391,10 @@ myStartupHook = return ()
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
-
--- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do if not Graphics.X11.Xinerama.compiledWithXinerama 
             then putStrLn "WARNING: Xinerama was not compiled in."
-            else do  xmproc <- spawnPipe "/usr/bin/xmobar /ulg/home/lally/config/xmobarrc"
+            else do  xmproc <- spawnPipe "~/config/bin/xmobar ~/config/xmobarrc"
                      xmonad kde4Config {
 	              -- simple stuff
 	                terminal           = myTerminal,
@@ -416,8 +411,10 @@ main = do if not Graphics.X11.Xinerama.compiledWithXinerama
 
 	              -- hooks, layouts
 	                layoutHook         = desktopLayoutModifiers (myLayout), 
-			logHook = dynamicLogWithPP xmobarPP { ppOutput = hPutStrLn xmproc
-			                                    , ppTitle = xmobarColor "grey" "" . shorten 50},
+			logHook = dynamicLogWithPP $ xmobarPP { ppOutput = hPutStrLn xmproc
+			                                      , ppTitle = xmobarColor "grey" "" . shorten 50
+                                                              , ppExtras = [xmobarColorL "green" "" logCurrent]
+                                                              , ppOrder = \(workspaces:_:title:current:_) -> [current, title] },
 	                manageHook         = myManageHook,
 	                handleEventHook    = myEventHook,
 	                startupHook        = myStartupHook

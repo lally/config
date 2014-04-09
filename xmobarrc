@@ -8,11 +8,11 @@ Config { font = "xft:Pragmata Pro-8"  -- "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
                     , Run CpuFreq ["-t", "<cpu0> <cpu1>", "-L", "0", "-H", "2", "-l", "lightblue", "-n","white", "-h", "red"] 50
                     -- , Run Com "/home/blackgod/system/getcoretemp.sh" [] "coreTemp" 10
                     -- , Run CoreTemp ["-t", "<core0>C <core1>C", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 50
-                    , Run Memory ["-t","Mem: <usedratio>%"] 10
+                    , Run Memory ["-t","Mem: <usedratio>%", "-L", "10", "-H", "30", "--high", "red"] 10
                     , Run Swap [] 10
-                    , Run Wireless "wlan0" ["-t","wlan0: <quality>%","-L","0","-H","32","--normal","green","--high","red"] 300
+                    , Run Wireless "wlan0" ["-t","wlan0: <quality>%","-L","0","-H","32","--normal","red","--high","green"] 300
 
-                    , Run BatteryP ["BAT0", "BAT1"] ["-t", "<timeleft>"
+                    , Run BatteryP ["BAT0", "BAT1"] ["-t", "<timeleft>", "-S"
                                         , "-L", "10", "-H", "80"
                                         , "-l", "red", "-h", "green"
                                         , "--", "-O", "[Chrg]" ] 100
@@ -23,5 +23,5 @@ Config { font = "xft:Pragmata Pro-8"  -- "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ CPU: %cpufreq% :: %multicpu% | %memory% %swap% | %wlan0wi% | Bat: %battery% | EWR: %KEWR% | %date%"
+       , template = "%StdinReader% }{ ⋆ CPU: %cpufreq% → %multicpu% | %memory% %swap% | %wlan0wi% | Bat Tm: %battery% | EWR: %KEWR%° | %date%"
        }
