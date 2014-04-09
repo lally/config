@@ -60,45 +60,10 @@ the form (display key-protocol hex-string)"
               nil)
             (list "add" display key-protocol hex-string))))
 
-
 ;;
-;; When the site-libs are present
-(when (file-accessible-directory-p "~/config/libs")
-  (progn
-    (add-to-list 'load-path "~/config/libs/magit-0.8.2")
-    (add-to-list 'load-path "/ulg/share/emacs/site-lisp/emacspeak/lisp/g-client")))
-
-
-;; IDO, for my enhanced buffer management.
-(require 'ido)
-(ido-mode t)
-(global-ede-mode 1)                      ; Enable the Project management system
-;(semantic-load-enable-code-helpers)      ; Enable prototype help and
-                                        ; smart completion
-;(global-srecode-minor-mode 1)            ; Enable template insertion menu
-
-;; MAGIT, for GIT support.
-(require 'magit)
-
-(global-set-key [f5] 'magit-status)
-
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 81 :width condensed :foundry "unknown" :family "Anka/Coder Narrow"))))
- '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
-
-
-;; ALIASES
-(defalias 'rs 'replace-string)
-(defalias 'ar 'align-regexp)
-(put 'scroll-left 'disabled nil)
-
-;; GDB Setup
-(setq gdb-command-name "gdb --nx")
-(setq gdb-create-source-file-list nil)
+;; LOAD PATH SETUP
+;; ALL OF IT
+;;
 (if (file-exists-p "/home/build")
     (progn
       ;;============================================================
@@ -123,38 +88,91 @@ the form (display key-protocol hex-string)"
 
 ;; Locally added - http://www.corp.google.com/eng/google_emacs.html
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
-(add-to-list 'load-path "~/.emacs.d/site-lisp/icicles")
-; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/lisp")
-; (add-to-list 'load-path "~/.emacs.d/site-lisp/org/contrib/lisp")
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
-(add-to-list 'load-path "/usr/local/share/emacs23/site-lisp")
 (if (file-exists-p "/usr/local/google")
     (add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp")
 )
 ;; Stuff in config/libs/*
 (add-to-list 'load-path "~/config/libs/site-lisp")
-(add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
-;; magit now ships with emacs.
-;(add-to-list 'load-path "~/config/libs/site-lisp/magit-0.8.2")
-; (require 'dired-details+)
-; (require 'dired-x)
+(if (file-exists-p "~/config/libs/site-lisp/haskell-mode")
+    (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
+)
+
+;; Package-Manager stuff, Emacs 24+ only
+(if (>= emacs-major-version 24)
+    (progn
+      (package-initialize)
+	;;; This was installed by package-install.el.
+	;;; This provides support for the package system and
+	;;; interfacing with ELPA, the package archive.
+	;;; Move this code earlier if you want to reference
+	;;; packages in your .emacs.
+      (require 'package)
+      ;; Any add to list for package-archives (to add marmalade or melpa) goes here
+      (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+      (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+      (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+      (package-initialize)
+      ))
+
+
+;; IDO, for my enhanced buffer management.
+(require 'ido)
+(ido-mode t)
+(global-ede-mode 1)                      ; Enable the Project management system
+
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "black" 
+                         :foreground "white" :inverse-video nil 
+                         :box nil :strike-through nil :overline nil 
+                         :underline nil :slant normal :weight normal 
+                         :height 90 :width condensed :foundry "unknown" 
+                         :family "PragmataPro"))))
+ '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
+
+
+;; ALIASES
+(defalias 'rs 'replace-string)
+(defalias 'ar 'align-regexp)
+(put 'scroll-left 'disabled nil)
+
+;; GDB Setup
+(setq gdb-command-name "gdb --nx")
+(setq gdb-create-source-file-list nil)
 (require 'column-marker)
 (require 'fic-mode)
-(require 'magit)
-; (require 'buff-menu+)
-;(require 'dbgr)
-; (require 'vline)
 (require 'org-install)
 (require 'org-habit)
 (require 'org-protocol)
 (require 'haskell-mode)
 
+;;============================================================
+;; SEMANTICDB SETUP
+;;============================================================
+(global-ede-mode 1)                      ; Enable the Project management system
+;(semantic-load-enable-gaudy-code-helpers)      ; Enable prototype help and
+;                                               ; smart completion
+(setq semantic-stickyfunc-mode 1)
+(setq semantic-decoration-mode 1)
+(setq semantic-idle-completion-mode nil)
+;(global-srecode-minor-mode 1)            ; Enable template insertion menu
 
-(autoload 'pymacs-apply "pymacs")
-(autoload 'pymacs-call "pymacs")
-(autoload 'pymacs-eval "pymacs" nil t)
-(autoload 'pymacs-exec "pymacs" nil t)
-(autoload 'pymacs-load "pymacs" nil t)
+;(add-hook 'python-mode-hook 'turn-on-fic-mode)
+
+(require 'semantic/ia)
+; (require 'semantic/gcc)
+(require 'semantic/db)
+(global-semanticdb-minor-mode 1)
+(semanticdb-enable-gnu-global-databases 'c-mode)
+(semanticdb-enable-gnu-global-databases 'c++-mode)
+;; Remove semanticdb-save-all-db-idle from the auto-save-hook.  It looks
+;; to be my stalling problem.  I blame NFS.
+(remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
+(set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
+
 
 ;;---------------------------------------------------------------------- 
 ;; Haskell mode
@@ -177,33 +195,6 @@ the form (display key-protocol hex-string)"
 (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
-
-(if (file-exists-p "/usr/local/google/src/cedet-1.1/common/cedet.el")
-    (load-file "/usr/local/google/src/cedet-1.1/common/cedet.el")
-	;;============================================================
-	;; SEMANTICDB SETUP
-	;;============================================================
-	(global-ede-mode 1)                      ; Enable the Project management system
-	;(semantic-load-enable-gaudy-code-helpers)      ; Enable prototype help and
-	;                                               ; smart completion
-	(setq semantic-stickyfunc-mode 1)
-	(setq semantic-decoration-mode 1)
-	(setq semantic-idle-completion-mode nil)
-	;(global-srecode-minor-mode 1)            ; Enable template insertion menu
-
-	;(add-hook 'python-mode-hook 'turn-on-fic-mode)
-
-	(require 'semantic/ia)
-	; (require 'semantic/gcc)
-	(require 'semantic/db)
-	(global-semanticdb-minor-mode 1)
-	(semanticdb-enable-gnu-global-databases 'c-mode)
-	(semanticdb-enable-gnu-global-databases 'c++-mode)
-	;; Remove semanticdb-save-all-db-idle from the auto-save-hook.  It looks
-	;; to be my stalling problem.  I blame NFS.
-	(remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
-	(set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
-)
 
 ;(require 'light-symbol)
 ;(fringe-mode "left-only")
@@ -434,8 +425,8 @@ the form (display key-protocol hex-string)"
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
   (set-fill-column 79)
-  (set-default-font
-   "-unknown-Anka/Coder Narrow-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
+;  (set-default-font
+;   "-unknown-Pragmata Pro-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
   (set-face-attribute 'default nil :height 93)
   (set-background-color "black")
   (set-foreground-color "white")
@@ -614,26 +605,9 @@ the form (display key-protocol hex-string)"
 (set-cursor-color "white")
 (set-face-background 'region "midnight blue")
 
-;; Package-Manager stuff, Emacs 24+ only
-(if (> emacs-major-version 24)
-    (progn
-	(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-				 ("marmalade" . "http://marmalade-repo.org/packages/")
-				 ("melpa" . "http://melpa.milkbox.net/packages/")))
-	(package-initialize)
-	(require 'git-gutter)
-	;;; This was installed by package-install.el.
-	;;; This provides support for the package system and
-	;;; interfacing with ELPA, the package archive.
-	;;; Move this code earlier if you want to reference
-	;;; packages in your .emacs.
-	(require 'package)
-	;; Any add to list for package-archives (to add marmalade or melpa) goes here
-	(add-to-list 'package-archives
-	    '("marmalade" .
-	      "http://marmalade-repo.org/packages/"))
-	(package-initialize)
-))
+;; MAGIT, for GIT support.
+(require 'magit)
+(require 'git-gutter)
 ;;============================================================
 ;; KEYBINDINGS
 ;;============================================================
@@ -652,6 +626,8 @@ the form (display key-protocol hex-string)"
 
 (global-set-key [f2] 'previous-error)
 (global-set-key [f3] 'next-error)
+(global-set-key [f5] 'magit-status)
+
 (global-set-key [f12] 'compile)
 (global-set-key [S-f12] 'magit-status)
 

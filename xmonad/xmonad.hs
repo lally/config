@@ -353,6 +353,7 @@ myManageHook = composeAll
     , title     =? "Eclipse"        --> doFloat
     , className =? "Plasma-desktop" --> doFloat -- (doShift "misc2")
     , isDialog                      --> doCenterFloat
+    , title     =? "FLOAT"          --> doCenterFloat
     , isFullscreen --> doFullFloat ]
 
 
