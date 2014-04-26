@@ -1,0 +1,13 @@
+diff --git a/Makefile b/Makefile
+index d360866..7bd5a72 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@ VERSION = $(shell git describe --tags --match 'v[0-9]*' --abbrev=0 | sed 's/^v//
+ GIT_VERSION = $(shell git describe --tags --match 'v[0-9]*' --long --dirty | sed 's/^v//')
+ 
+ INSTALL_INFO = install-info
+-EMACS = emacs
++EMACS = /ulg/bin/emacs
+ EFLAGS =
+ BATCH = $(EMACS) $(EFLAGS) --batch -Q -L .
+ SUBST_ATAT = sed -e 's/@@GIT_VERSION@@/$(GIT_VERSION)/g;s/@GIT_VERSION@/$(GIT_VERSION)/g;s/@@VERSION@@/$(VERSION)/g;s/@VERSION@/$(VERSION)/g'

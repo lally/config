@@ -1,0 +1,35 @@
+diff --git a/src/Plugins/Monitors/Weather.hs b/src/Plugins/Monitors/Weather.hs
+index f2cc131..79761b8 100644
+--- a/src/Plugins/Monitors/Weather.hs
++++ b/src/Plugins/Monitors/Weather.hs
+@@ -16,7 +16,7 @@ module Plugins.Monitors.Weather where
+ 
+ import Plugins.Monitors.Common
+ 
+-import Control.Exception (catch, IOException)
++import qualified Control.Exception as Ex -- (catch, IOException)
+ import Network.HTTP
+ 
+ import Text.ParserCombinators.Parsec
+@@ -133,8 +133,8 @@ stationUrl station = defUrl ++ station ++ ".TXT"
+ getData :: String -> IO String
+ getData station = do
+     let request = getRequest (stationUrl station)
+-    catch (simpleHTTP request >>= getResponseBody) errHandler
+-    where errHandler :: IOException -> IO String
++    Ex.catch (simpleHTTP request >>= getResponseBody) errHandler
++    where errHandler :: Ex.IOException -> IO String
+           errHandler _ = return "<Could not retrieve data>"
+ 
+ formatWeather :: [WeatherInfo] -> Monitor String
+@@ -154,8 +154,8 @@ weatherReady :: [String] -> Monitor Bool
+ weatherReady str = do
+     let station = head str
+         request = headRequest (stationUrl station)
+-    io $ catch (simpleHTTP request >>= checkResult) errHandler
+-    where errHandler :: IOException -> IO Bool
++    io $ Ex.catch (simpleHTTP request >>= checkResult) errHandler
++    where errHandler :: Ex.IOException -> IO Bool
+           errHandler _ = return False
+           checkResult result = do
+             case result of
