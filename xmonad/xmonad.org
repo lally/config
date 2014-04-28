@@ -1,0 +1,30 @@
+#+TITLE: Xmonad Hacking Notes
+
+* Better GridSelect
+** Have a graphviz-layout tag graph of windows
+*** PROCESS
+**** As a separate module that's imported
+     - Create the module first
+     - only add a dumb hook from 
+**** Dump text to a secondary program
+**** Devel the program to pop-up what I want
+**** integrate back into my xmonad
+*** get the graph
+    - [ ] Dump the untagged list of windows
+      - GridSelect sources:
+         #+begin_src hs
+         windowMap :: X [(String,Window)]
+         windowMap = do
+             ws <- gets windowset
+             wins <- mapM keyValuePair (W.allWindows ws)
+             return wins
+          where keyValuePair w = flip (,) w `fmap` decorateName' w
+
+         decorateName' :: Window -> X String
+         decorateName' w = do
+           fmap show $ getName w
+         #+end_src hs
+        
+    - [ ] Pipe to a test program
+*** cairo render to a pixmap
+*** display the pixmap

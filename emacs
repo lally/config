@@ -93,9 +93,12 @@ the form (display key-protocol hex-string)"
 )
 ;; Stuff in config/libs/*
 (add-to-list 'load-path "~/config/libs/site-lisp")
-(if (file-exists-p "~/config/libs/site-lisp/haskell-mode")
-    (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
-)
+;(if (file-exists-p "~/config/libs/site-lisp/haskell-mode")
+;    (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
+
+; (autoload 'haskell-font-lock-choose-keywords "haskell-font-lock")
+
+;)
 
 ;; Package-Manager stuff, Emacs 24+ only
 (if (>= emacs-major-version 24)

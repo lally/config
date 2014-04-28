@@ -39,6 +39,8 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.BoringWindows
 
+import Support.WinGraph
+
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
@@ -208,6 +210,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Toggle GridSelect program menu
     , ((modm              , xK_g     ), goToSelected gsconfig)
+
+    , ((modm .|. shiftMask, xK_g     ), showWindows)
 
    -- Note: I can also have a separate grid with different datasets;
    -- but I think I'd rather bind that to a larger "task" framework

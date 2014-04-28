@@ -41,6 +41,10 @@ build-type:          Simple
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.8
 
+Library
+ Exposed-modules:   Support.WinGraph
+ Build-Depends:     MissingH >= 1.2, base, xmonad, xmonad-contrib, process
+ -- ghc-options:       -Wall
 
 executable xmonad
   -- .hs or .lhs file containing the Main module.
@@ -51,5 +55,7 @@ executable xmonad
   
   -- Other library packages from which modules are imported.
   -- X11 and onwards are just for diagnostic use.
-  build-depends:       base >= 4.5.0, containers, xmonad, xmonad-contrib, process, X11
+  -- NOTE: gtk2hs-buildtools has to be installed globally (AFAICT)
+  build-depends:       base >= 4.5.0, containers, xmonad, xmonad-contrib, process, 
+                       X11, gtk3, MissingH
   
