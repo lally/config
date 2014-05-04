@@ -2,7 +2,7 @@
 --  see http://haskell.org/cabal/users-guide/
 
 -- The name of the package.
-name:                windowmanager
+name:                window-manager
 
 -- The package version.  See the Haskell package versioning policy (PVP) 
 -- for standards guiding when and how versions should be incremented.
@@ -41,8 +41,8 @@ build-type:          Simple
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.8
 
-executable graphwin
- main-is:           Support/WinGraph.hs
+library
+ exposed-modules:           Support.GraphWin
  
  build-depends:     MissingH >= 1.2, base, xmonad, xmonad-contrib, process
  -- ghc-options:       -Wall

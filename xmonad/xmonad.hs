@@ -39,7 +39,7 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.BoringWindows
 
-import Support.WinGraph
+import Support.GraphWin
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M

@@ -1,4 +1,4 @@
-module Support.WinGraph where
+module Support.GraphWin where
 
 import Data.String.Utils (join)
 import System.Process
