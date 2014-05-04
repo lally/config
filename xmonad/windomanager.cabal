@@ -2,7 +2,7 @@
 --  see http://haskell.org/cabal/users-guide/
 
 -- The name of the package.
-name:                Lally
+name:                windowmanager
 
 -- The package version.  See the Haskell package versioning policy (PVP) 
 -- for standards guiding when and how versions should be incremented.
@@ -41,9 +41,10 @@ build-type:          Simple
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.8
 
-Library
- Exposed-modules:   Support.WinGraph
- Build-Depends:     MissingH >= 1.2, base, xmonad, xmonad-contrib, process
+executable graphwin
+ main-is:           Support/WinGraph.hs
+ 
+ build-depends:     MissingH >= 1.2, base, xmonad, xmonad-contrib, process
  -- ghc-options:       -Wall
 
 executable xmonad

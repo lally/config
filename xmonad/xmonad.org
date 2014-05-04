@@ -10,7 +10,7 @@
 **** Devel the program to pop-up what I want
 **** integrate back into my xmonad
 *** get the graph
-    - [ ] Dump the untagged list of windows
+    - [X] Dump the untagged list of windows
       - GridSelect sources:
          #+begin_src hs
          windowMap :: X [(String,Window)]
@@ -25,6 +25,28 @@
            fmap show $ getName w
          #+end_src hs
         
-    - [ ] Pipe to a test program
+    - [X] Pipe to a test program
+      That's simple enough for later, right now, use a dumb text file.
+      ~/input.txt
+
+    - [ ] Write a separate test program to draw the graph.
+      
 *** cairo render to a pixmap
+    Current conflict: I'm using a pango setup that has its own
+    widgets.  But, I can't do the layout I want with the gtk widget
+    layouts.  So, can I use pango for drawing the text directly on a
+    cairo canvas?
+
 *** display the pixmap
+
+** APIs
+*** Widget Layout
+*** Canvas
+    [[http://hackage.haskell.org/package/gtk-0.12.5.7/docs/Graphics-UI-Gtk-Misc-DrawingArea.html#t:DrawingArea][Docs: DrawingArea]]
+
+**** Cairo
+     [[http://localhost:8080/gtk-0.12.5.7/html/Graphics-UI-Gtk-Cairo.html][Graphics.UI.Gtk.Cairo Docs]]
+     The Cairo Render monad can be used with Gtk.Cairo 
+**** Pango Drawing in Cairo
+     
+     [[http://localhost:8080/pango-0.12.5.3/html/Graphics-Rendering-Pango-Cairo.html][G.R.Pango.Cairo Docs]]
