@@ -59,6 +59,21 @@ readInput text =
 --
 -- Graphical Layout
 --
+
+-- policy functions
+manyWindows = 8      
+colWidth renderSet =
+  if (length $ windows renderSet) > manyWindows
+     then 150
+     else 200
+colHeight = 50
+tagWidth = 100
+tagHeight = 20
+
+-- draw preferences
+fontSize = 10
+fontFamily = "PragmataPro"
+
 tagHeaders :: PreRenderSet -> Render [PangoLayout]
 tagHeaders renderSet = do
   mapM makeTagLayout tags
@@ -72,8 +87,8 @@ tagHeaders renderSet = do
         layoutSetEllipsize layout EllipsizeMiddle
         layoutSetAlignment layout AlignRight
         layoutSetAttributes layout [
-          AttrSize 0 len 10.0,
-          AttrFamily 0 len "PragmataPro"
+          AttrSize 0 len fontSize,
+          AttrFamily 0 len fontFamily
           ]
       return layout
 
@@ -82,19 +97,28 @@ tagColumnHeaders renderSet = do
   mapM makeColumnHeader wins
   where
     wins = windows renderSet
+    ellipseMode = if length wins > manyWindows
+                     then EllipsizeNone
+                     else EllipsizeMiddle	 
     makeColumnHeader win = do
       let len = length $ displayTitle win
       layout <- createLayout $ displayTitle win
       liftIO $ do
         -- TODO(lally): Consider changing parameters (e.g., ellipsize)
-        -- when we have many windows and/or a particularly long name
+        -- when we have many windows and/or a particularly long name.
+        
+        -- TODO(lally): Do a two-pass version.  Get the height in the
+        -- first pass, and if it's more than 2 lines, truncate.
+        
         -- Really, this logic will need some later specialization to get
         -- just right.
-        layoutSetWidth layout $ Just (fromIntegral 200)
+        
+        layoutSetWidth layout $ Just (fromIntegral $ colWidth renderSet)
         layoutSetAlignment layout AlignLeft
+        layoutSetEllipsize layout ellipseMode
         layoutSetAttributes layout [
-          AttrSize 0 len 10.0,
-          AttrFamily 0 len "PragmataPro"
+          AttrSize 0 len fontSize,
+          AttrFamily 0 len fontFamily
           ]
       return layout
 
@@ -116,17 +140,18 @@ updateCanvas renderSet = do
     tagHeads <- tagHeaders renderSet
     colHeads <- tagColumnHeaders renderSet
     
-    moveTo 0 25
+    moveTo 0 15
     save
     -- draw the top column headers
-    relMoveTo 110 0
-    mapM (\lay -> do { showLayout lay; relMoveTo 205 0; }) $ colHeads
+    relMoveTo (10 + tagWidth) 0
+    let colXIncr = 5 + colWidth renderSet
+    mapM (\lay -> do { showLayout lay; relMoveTo colXIncr 0; }) $ colHeads
     restore
     
     save
     -- draw the tag headers
     moveTo 0 60
-    mapM (\lay -> do { showLayout lay; relMoveTo 0 25; }) $ tagHeads
+    mapM (\lay -> do { showLayout lay; relMoveTo 0 (5 + tagHeight); }) $ tagHeads
     restore
   return True
   
