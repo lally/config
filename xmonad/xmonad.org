@@ -43,10 +43,15 @@
 *** Widget Layout
 *** Canvas
     [[http://hackage.haskell.org/package/gtk-0.12.5.7/docs/Graphics-UI-Gtk-Misc-DrawingArea.html#t:DrawingArea][Docs: DrawingArea]]
-
 **** Cairo
      [[http://localhost:8080/gtk-0.12.5.7/html/Graphics-UI-Gtk-Cairo.html][Graphics.UI.Gtk.Cairo Docs]]
      The Cairo Render monad can be used with Gtk.Cairo 
+     Color is controlled with setSourceColor
 **** Pango Drawing in Cairo
-     
      [[http://localhost:8080/pango-0.12.5.3/html/Graphics-Rendering-Pango-Cairo.html][G.R.Pango.Cairo Docs]]
+***** Font
+      PangoAttribute
+***** Number of lines
+      Depends on text width vs layout width.
+      Only goes > 1 when Ellipsize* is enabled.
+      

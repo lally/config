@@ -56,58 +56,94 @@ readInput text =
     where
       allWindows= map parseWin $ filter ((> 1) . length) $ lines text
 
-updateCanvas :: PangoLayout -> EventM EExpose Bool
-updateCanvas text = do
+--
+-- Graphical Layout
+--
+tagHeaders :: PreRenderSet -> Render [PangoLayout]
+tagHeaders renderSet = do
+  mapM makeTagLayout tags
+  where
+    tags = allTags renderSet
+    makeTagLayout tag = do
+      let len = length tag
+      layout <- createLayout tag
+      liftIO $ do
+        layoutSetWidth layout $ Just (fromIntegral 100)
+        layoutSetEllipsize layout EllipsizeMiddle
+        layoutSetAlignment layout AlignRight
+        layoutSetAttributes layout [
+          AttrSize 0 len 10.0,
+          AttrFamily 0 len "PragmataPro"
+          ]
+      return layout
+
+tagColumnHeaders :: PreRenderSet -> Render [PangoLayout]
+tagColumnHeaders renderSet = do
+  mapM makeColumnHeader wins
+  where
+    wins = windows renderSet
+    makeColumnHeader win = do
+      let len = length $ displayTitle win
+      layout <- createLayout $ displayTitle win
+      liftIO $ do
+        -- TODO(lally): Consider changing parameters (e.g., ellipsize)
+        -- when we have many windows and/or a particularly long name
+        -- Really, this logic will need some later specialization to get
+        -- just right.
+        layoutSetWidth layout $ Just (fromIntegral 200)
+        layoutSetAlignment layout AlignLeft
+        layoutSetAttributes layout [
+          AttrSize 0 len 10.0,
+          AttrFamily 0 len "PragmataPro"
+          ]
+      return layout
+
+--
+-- Drawing
+--
+updateCanvas :: PreRenderSet -> EventM EExpose Bool
+updateCanvas renderSet = do
   win <- eventWindow
   liftIO $ do
   (width,height) <- drawableGetSize win
+  -- Build a table of all the data from the pre-render set.
+  let nrTags = length . allTags $ renderSet
   -- Try rendering with cairo instead.
   renderWithDrawable win $ do
     setAntialias AntialiasGray
-    setSourceColor $ Color 65535 0 0
-    let points = map (\(a,b) -> (fromIntegral a, fromIntegral b)) [
-                            (200,30),(width-30,height-30),(width-30,30),(30,height-30)]
-    uncurry moveTo $ head points
-    mapM_ (uncurry lineTo) $ tail points
-    stroke
+    setSourceColor $ Color 65535 65535 65535
+
+    tagHeads <- tagHeaders renderSet
+    colHeads <- tagColumnHeaders renderSet
+    
+    moveTo 0 25
+    save
+    -- draw the top column headers
+    relMoveTo 110 0
+    mapM (\lay -> do { showLayout lay; relMoveTo 205 0; }) $ colHeads
+    restore
+    
+    save
+    -- draw the tag headers
+    moveTo 0 60
+    mapM (\lay -> do { showLayout lay; relMoveTo 0 25; }) $ tagHeads
+    restore
   return True
   
 main = do
   initGUI
   dia <- dialogNew
   allLines <- readFile "/home/lally/input.txt"
-  let elements = split "," allLines
-  let windowNames = unlines elements
+  let renderSet = readInput allLines
   dialogAddButton dia stockOk ResponseOk
   contain <- dialogGetUpper dia
   canvas <- drawingAreaNew
   canvas `on` sizeRequest $ return (Requisition 800 450)
-  -- a Pango text layout.
-  text <- canvas `widgetCreateLayout` windowNames
-  -- - Bind the layout
-  canvas `on` exposeEvent $ updateCanvas text
-  -- add 'canvas' to the dialog, by putting it under 'contain', the 'upper' part of the dialog.
+  -- Bind the layout
+  canvas `on` exposeEvent $ updateCanvas renderSet
+  -- Add 'canvas' to the dialog, by putting it under 'contain', the
+  -- 'upper' part of the dialog.
   boxPackStartDefaults contain canvas
   widgetShow canvas
   dialogRun dia
   return ()
-
-{-    
-  gc <- gcNew win
-  gcSetValues gc $ newGCValues {
-    foreground = Color 65535 0 0,
-    capStyle = CapRound,
-    lineWidth  = 20,
-    joinStyle = JoinRound
-  }
-  drawLines win gc [(30,30),(width-30,height-30),(width-30,30),(30,height-30)]
-  gcSetValues gc $ newGCValues {
-    foreground = Color 65535 65535 0,
-    lineWidth = 4
-  }
-  drawArc win gc False 0 0 width height (135*64) (90*64)
-
-  drawLayoutWithColors win gc 30 (height `div` 2) text
-    (Just (Color 0 0 0)) Nothing
-  return True
--}

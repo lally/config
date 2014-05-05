@@ -19,3 +19,6 @@
 [submodule "tools/xmobar"]
 	path = tools/xmobar
 	url = https://github.com/jaor/xmobar.git
+[submodule "tools/hlint"]
+	path = tools/hlint
+	url = https://github.com/ndmitchell/hlint.git
