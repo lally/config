@@ -25,6 +25,7 @@ import Control.Monad.Trans ( liftIO )
 import Data.String.Utils
 import Data.List ( nub, lines )
 import Data.Tuple ( uncurry, fst, snd )
+import Debug.Trace as T
 
 -- Tags may get more complex later, as they go hierarchical, or aspect
 -- related (e.g., tls-dev.research).   For now, strings
@@ -61,14 +62,15 @@ readInput text =
 --
 
 -- policy functions
-manyWindows = 8      
+manyWindows = 8 :: Int
+colWidth :: PreRenderSet -> Int
 colWidth renderSet =
   if (length $ windows renderSet) > manyWindows
      then 150
      else 200
-colHeight = 50
-tagWidth = 100
-tagHeight = 20
+colHeight = 50 :: Int
+tagWidth = 100 :: Int
+tagHeight = 20 :: Int
 
 -- draw preferences
 fontSize = 10
@@ -98,8 +100,8 @@ tagColumnHeaders renderSet = do
   where
     wins = windows renderSet
     ellipseMode = if length wins > manyWindows
-                     then EllipsizeNone
-                     else EllipsizeMiddle	 
+                     then EllipsizeMiddle
+                     else EllipsizeNone
     makeColumnHeader win = do
       let len = length $ displayTitle win
       layout <- createLayout $ displayTitle win
@@ -109,6 +111,9 @@ tagColumnHeaders renderSet = do
         
         -- TODO(lally): Do a two-pass version.  Get the height in the
         -- first pass, and if it's more than 2 lines, truncate.
+
+        -- TODO(lally): Put out [(PangoLayout, width)], so we can support
+        -- heterogenous widths at higher levels.
         
         -- Really, this logic will need some later specialization to get
         -- just right.
@@ -131,28 +136,52 @@ updateCanvas renderSet = do
   liftIO $ do
   (width,height) <- drawableGetSize win
   -- Build a table of all the data from the pre-render set.
-  let nrTags = length . allTags $ renderSet
+  let nrTags = length . allTags $ renderSet :: Int
+  let white = Color 65535 65535 65535
+  let topMargin = 15 :: Int
   -- Try rendering with cairo instead.
   renderWithDrawable win $ do
     setAntialias AntialiasGray
-    setSourceColor $ Color 65535 65535 65535
+    setSourceColor white
 
     tagHeads <- tagHeaders renderSet
     colHeads <- tagColumnHeaders renderSet
+
+    let colXIncr = 5 + colWidth renderSet :: Int
+    let numCols = (width - 10 - tagWidth) `div` colXIncr
+    let topOfRowHeads = topMargin + colHeight :: Int
+    let bottomOfRowHeads = topOfRowHeads + (
+          (5 + tagHeight) * (length tagHeads)) :: Int
+    -- use Int coordinates
+    let relMoveToI x y = relMoveTo (fromIntegral x) (fromIntegral y)
+    let moveToI x y = moveTo (fromIntegral x) (fromIntegral y)
+    let trace s = liftIO $ T.traceIO s
     
-    moveTo 0 15
+    trace ("Got " ++ show (length tagHeads) ++ " row headers")
+    trace ("Got " ++ show (length colHeads) ++ " column headers")
+    trace ("Can fit " ++ show numCols ++ " columns across.")
+    trace (" width = " ++ show width ++ "\n" ++
+           " tagWidth + 10 = " ++ show (10 + tagWidth) ++ "\n" ++
+           " colXIncr = " ++ show colXIncr)
+    trace ("Displaying " ++ show (length colHeads - numCols) ++ " on bottom row")
+    
+    moveToI 0 topMargin
     save
     -- draw the top column headers
-    relMoveTo (10 + tagWidth) 0
-    let colXIncr = 5 + colWidth renderSet
-    mapM (\lay -> do { showLayout lay; relMoveTo colXIncr 0; }) $ colHeads
+    relMoveToI (10 + tagWidth) 0
+    mapM (\lay -> do { showLayout lay; relMoveToI colXIncr 0; }) $ take numCols colHeads
     restore
     
     save
     -- draw the tag headers
-    moveTo 0 60
-    mapM (\lay -> do { showLayout lay; relMoveTo 0 (5 + tagHeight); }) $ tagHeads
+    moveToI 0 topOfRowHeads
+    mapM (\lay -> do { showLayout lay; relMoveToI 0 (5 + tagHeight); }) $ tagHeads
     restore
+
+    save
+    -- draw the bottom column headers
+    moveToI (10 + tagWidth) bottomOfRowHeads
+    mapM (\lay -> do { showLayout lay; relMoveToI colXIncr 0; }) $ drop numCols colHeads
   return True
   
 main = do
@@ -163,7 +192,17 @@ main = do
   dialogAddButton dia stockOk ResponseOk
   contain <- dialogGetUpper dia
   canvas <- drawingAreaNew
-  canvas `on` sizeRequest $ return (Requisition 800 450)
+  -- Figure out how big the window should be
+  let numWindows = length (windows renderSet)
+  let numTags = length (allTags renderSet)
+  let rawColWidth = numWindows * (5 + colWidth renderSet)
+  let optimalWidth = tagWidth + 10 +
+                     if numWindows > manyWindows
+                        then rawColWidth `div` 2
+                        else rawColWidth
+  let reqWidth = min 900 optimalWidth
+  let reqHeight = min 600 (2 * colHeight) + (tagHeight * numTags) + 15
+  canvas `on` sizeRequest $ return (Requisition reqWidth reqHeight)
   -- Bind the layout
   canvas `on` exposeEvent $ updateCanvas renderSet
   -- Add 'canvas' to the dialog, by putting it under 'contain', the
