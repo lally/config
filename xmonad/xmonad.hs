@@ -41,6 +41,9 @@ import XMonad.Layout.BoringWindows
 
 import Support.GraphWin
 
+import System.Posix.IO (createPipe)
+import Control.Concurrent.STM.TVar
+
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
@@ -399,7 +402,11 @@ myStartupHook = return ()
 main = do if not Graphics.X11.Xinerama.compiledWithXinerama 
             then putStrLn "WARNING: Xinerama was not compiled in."
             else do  xmproc <- spawnPipe "~/config/bin/xmobar ~/config/xmobarrc"
-                     xmonad kde4Config {
+                     inTVar <- newTVarIO []
+                     outTVar <- newTVarIO Nothing 
+                     (readEnd, _) <- createPipe
+                     -- forkIO the web server here.
+                     xmonad readEnd inTVar outTVar kde4Config {
 	              -- simple stuff
 	                terminal           = myTerminal,
 	                focusFollowsMouse  = myFocusFollowsMouse,

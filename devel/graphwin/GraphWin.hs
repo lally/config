@@ -186,12 +186,8 @@ updateCanvas renderSet = do
   
 main = do
   initGUI
-  dia <- dialogNew
   allLines <- readFile "/home/lally/input.txt"
   let renderSet = readInput allLines
-  dialogAddButton dia stockOk ResponseOk
-  contain <- dialogGetUpper dia
-  canvas <- drawingAreaNew
   -- Figure out how big the window should be
   let numWindows = length (windows renderSet)
   let numTags = length (allTags renderSet)
@@ -202,12 +198,18 @@ main = do
                         else rawColWidth
   let reqWidth = min 900 optimalWidth
   let reqHeight = min 600 (2 * colHeight) + (tagHeight * numTags) + 15
+  win <- windowNewPopup
+  windowSetDefaultSize win reqWidth reqHeight
+  windowSetPosition win WinPosCenterAlways
+  -- window
+  
+  canvas <- drawingAreaNew
   canvas `on` sizeRequest $ return (Requisition reqWidth reqHeight)
   -- Bind the layout
   canvas `on` exposeEvent $ updateCanvas renderSet
-  -- Add 'canvas' to the dialog, by putting it under 'contain', the
-  -- 'upper' part of the dialog.
-  boxPackStartDefaults contain canvas
-  widgetShow canvas
-  dialogRun dia
+  
+  -- Add 'canvas' to the window.
+  containerAdd win canvas
+  widgetShowAll win
+  mainGUI
   return ()

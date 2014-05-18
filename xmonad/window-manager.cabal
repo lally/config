@@ -44,10 +44,10 @@ cabal-version:       >=1.8
 library
  exposed-modules:           Support.GraphWin
  
- build-depends:     MissingH >= 1.2, base, xmonad, xmonad-contrib, process
+ build-depends:     MissingH >= 1.2, base, xmonad == 0.12, xmonad-contrib, process
  -- ghc-options:       -Wall
 
-executable xmonad
+executable super-xmonad
   -- .hs or .lhs file containing the Main module.
   main-is:             xmonad.hs
   
@@ -58,5 +58,5 @@ executable xmonad
   -- X11 and onwards are just for diagnostic use.
   -- NOTE: gtk2hs-buildtools has to be installed globally (AFAICT)
   build-depends:       base >= 4.5.0, containers, xmonad, xmonad-contrib, process, 
-                       X11, gtk3, MissingH
+                       X11, MissingH, stm, unix, gtk
   

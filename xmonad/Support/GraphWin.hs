@@ -18,7 +18,6 @@ decorateName' :: Window -> X String
 decorateName' w = do
   fmap show $ getName w
  
-
 showWindows :: X ()
 showWindows = do
   allWindows <- windowMap

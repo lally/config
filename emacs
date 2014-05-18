@@ -1,3 +1,7 @@
+;; Load up any private variables first
+(if (file-exists-p "~/.emacs-priv-vars")
+    (load "~/.emacs-priv-vars"))
+
 ;;============================================================
 ;; AUTOSAVE CONFIGURATION
 ;;============================================================
@@ -60,6 +64,15 @@ the form (display key-protocol hex-string)"
               nil)
             (list "add" display key-protocol hex-string))))
 
+
+(defun lally-erc-login ()
+  "Log into IRC using ERC, with my identity (lally) set up"
+  (interactive)
+  ; priv-irc-password is loaded in .emacs-priv-vars above.
+  (erc :server "irc.freenode.net" :nick "lally" :password priv-irc-password 
+       :full-name "Lally Singh")
+)
+
 ;;
 ;; LOAD PATH SETUP
 ;; ALL OF IT
@@ -93,12 +106,12 @@ the form (display key-protocol hex-string)"
 )
 ;; Stuff in config/libs/*
 (add-to-list 'load-path "~/config/libs/site-lisp")
-;(if (file-exists-p "~/config/libs/site-lisp/haskell-mode")
-;    (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
+;; (if (file-exists-p "~/config/libs/site-lisp/haskell-mode")
+;;     (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
 
-; (autoload 'haskell-font-lock-choose-keywords "haskell-font-lock")
+;;  (autoload 'haskell-font-lock-choose-keywords "haskell-font-lock")
 
-;)
+;; )
 
 ;; Package-Manager stuff, Emacs 24+ only
 (if (>= emacs-major-version 24)
@@ -113,7 +126,7 @@ the form (display key-protocol hex-string)"
       ;; Any add to list for package-archives (to add marmalade or melpa) goes here
       (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
       (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-      (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+      ; (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
       (package-initialize)
       ))
 
@@ -418,7 +431,7 @@ the form (display key-protocol hex-string)"
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
  '(gdb-speedbar-auto-raise t)
- '(haskell-program-name "cabal-dev ghci")
+ '(haskell-program-name "ghci")
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
  '(inhibit-startup-screen t)

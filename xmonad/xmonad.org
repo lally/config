@@ -41,6 +41,11 @@
 
 ** APIs
 *** Widget Layout
+**** Containers
+     [[http://hackage.haskell.org/package/gtk-0.12.5.7/docs/Graphics-UI-Gtk-Abstract-Container.html][G.U.G.Abstract.Container Docs]]
+     A window is a Container (instance of ContainerClass)
+     It holds one item.  Put another container in there (or just the canvas?)
+
 *** Canvas
     [[http://hackage.haskell.org/package/gtk-0.12.5.7/docs/Graphics-UI-Gtk-Misc-DrawingArea.html#t:DrawingArea][Docs: DrawingArea]]
 **** Cairo
@@ -55,3 +60,21 @@
       Depends on text width vs layout width.
       Only goes > 1 when Ellipsize* is enabled.
       
+
+* Built-in Webserver
+** Syncing threads
+*** XMonad's Main.hsc, the xmonad function loops forever
+    - Use 'connectionNumber dpy' to get the file handle for
+      the X connection
+    - Run my own select()
+      [[https://stackoverflow.com/questions/8592292/how-to-quit-the-blocking-of-xlibs-xnextevent][XNextEvent select() example]]
+    - And use a pipe with a 'notify' FD to indicate when I have work
+      in the TVAR to check.  The pipe's only purpose is to wake up the
+      select().
+      [[http://hackage.haskell.org/package/select-0.4.0.1/docs/System-Posix-IO-Select.html][select(2) library]]
+*** Where do I put the TVar?
+    - Put it right in main.  I directly invoke xmonad from xmonad.hs
+** Well, two TVars
+   - One for the current Xmonad state
+     - 
+   - One for the current mutations to run on that state
