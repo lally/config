@@ -1,6 +1,5 @@
 module Support.GraphWin where
 
-import Data.String.Utils (join)
 import System.Process
 import XMonad
 import XMonad.StackSet as W
@@ -17,7 +16,11 @@ windowMap = do
 decorateName' :: Window -> X String
 decorateName' w = do
   fmap show $ getName w
- 
+
+join :: String -> [String] -> String
+join del [] = ""
+join del (x:xs) = x ++ del ++ (join del xs)
+
 showWindows :: X ()
 showWindows = do
   allWindows <- windowMap
