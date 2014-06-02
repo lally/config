@@ -42,9 +42,10 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
- exposed-modules:           Support.GraphWin
+ exposed-modules:    Support.GraphWin, IPC.Server
  
- build-depends:     base, xmonad == 0.12, xmonad-contrib > 0.10, process
+ build-depends:      base, xmonad == 0.12, xmonad-contrib > 0.10, process, stm, yesod, X11
+                     -- warp >= 2.1
  -- ghc-options:       -Wall
 
 executable super-xmonad
@@ -58,6 +59,6 @@ executable super-xmonad
   -- X11 and onwards are just for diagnostic use.
   -- NOTE: gtk2hs-buildtools has to be installed globally (AFAICT)
   build-depends:       base >= 4.5.0, containers, xmonad, xmonad-contrib > 0.10, process, 
-                       X11, stm, unix
+                       X11, stm, unix, yesod
  -- gtk, transformers >= 0.3
   

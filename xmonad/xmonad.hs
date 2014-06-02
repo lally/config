@@ -39,13 +39,13 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.BoringWindows
 
-import Support.GraphWin
-
-import System.Posix.IO (createPipe)
-import Control.Concurrent.STM.TVar
-
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
+
+--
+-- Project-local imports
+--
+import Support
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -402,11 +402,14 @@ myStartupHook = return ()
 main = do if not Graphics.X11.Xinerama.compiledWithXinerama 
             then putStrLn "WARNING: Xinerama was not compiled in."
             else do  xmproc <- spawnPipe "~/config/bin/xmobar ~/config/xmobarrc"
-                     inTVar <- newTVarIO []
+                     {- inTVar <- newTVarIO []
                      outTVar <- newTVarIO Nothing 
-                     (readEnd, _) <- createPipe
+                     (readEnd, wrEnd) <- createPipe
                      -- forkIO the web server here.
-                     xmonad readEnd inTVar outTVar kde4Config {
+                     ipcThread <- forkIO $ runIPCServer wrEnd outTVar inTVar
+                     -- modified xmonad will use the same triplet for IPC
+                     xmonad readEnd inTVar outTVar kde4Config -}
+                     launchXMonad kde4Config {
 	              -- simple stuff
 	                terminal           = myTerminal,
 	                focusFollowsMouse  = myFocusFollowsMouse,
@@ -422,10 +425,12 @@ main = do if not Graphics.X11.Xinerama.compiledWithXinerama
 
 	              -- hooks, layouts
 	                layoutHook         = desktopLayoutModifiers (myLayout), 
-			logHook = dynamicLogWithPP $ xmobarPP { ppOutput = hPutStrLn xmproc
-			                                      , ppTitle = xmobarColor "grey" "" . shorten 50
-                                                              , ppExtras = [xmobarColorL "green" "" logCurrent]
-                                                              , ppOrder = \(workspaces:_:title:current:_) -> [current, title] },
+			logHook = dynamicLogWithPP $ xmobarPP
+                                  { ppOutput = hPutStrLn xmproc
+			          , ppTitle = xmobarColor "grey" "" . shorten 50
+                                  , ppExtras = [xmobarColorL "green" "" logCurrent]
+                                  , ppOrder = \(workspaces:_:title:current:_) ->
+                                              [current, title] },
 	                manageHook         = myManageHook,
 	                handleEventHook    = myEventHook,
 	                startupHook        = myStartupHook

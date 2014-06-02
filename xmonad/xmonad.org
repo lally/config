@@ -76,5 +76,78 @@
     - Put it right in main.  I directly invoke xmonad from xmonad.hs
 ** Well, two TVars
    - One for the current Xmonad state
-     - 
    - One for the current mutations to run on that state
+
+** Linking in yesod
+   The problem is haskell-platform.  Everything on it is so old that
+   it conflicts with ~cabal sandbox~.  The sandbox won't install
+   newer versions of packages installed system-wide.  So there are
+   nasty conflicts on chains of old packages.
+
+   Properly, I should nuke the platform and use ~xstow~ to manage a
+   minimal global ~ghc~ installation.  Let ~cabal~ install everything
+   needed for each project in the sandbox.
+
+
+
+* Synchronization Data
+ Ugh, there isn't enough information in the XState to be useful on the
+ IPC side.  Instead, we'll need a fully-queried window state.  That's
+ another data structure.  Additionally, it might need some
+ optimization on when everything's updated.  Well, the number of
+ windows is small, so I could just refresh everything every time for
+ right now.
+
+** Data Required
+*** For each window:
+     - Title
+     - Tags
+     - Geometry ?
+     - Desktop ?
+*** Added as ExtendedXState/ExtendedWindowInfo in XMonad.
+    
+** XMonad can't be the one doing this.
+   I'll want bits of state that aren't defined in xmonad, but
+   xmonad-contrib or xmonad-util.
+
+** So, good, take that out of xmonad and maintain that with closures 
+*** First, change the TVar from [IO ()] to [X ()]
+*** Then watch the windowset in the xstate
+    - Set implements Eq if the inner type implements E     - q
+    - Which it does!
+*** Every time it changes, run a closure to build ExtendedXState
+    - I'll have to keep the old one.
+    - And when do I monitor this?
+    - Huh.  Maybe be simple about it and poll at 10-25 Hz.
+    - A monitor thread?
+** Monitor thread
+   I should put together a utility launcher that wraps the call to
+   xmonad and launches everything else.
+   - Including a monitoring thread.
+*** Functions
+**** Maintain ExtendedXState
+**** A watchdog?
+*** Generalize to a timer and a list of actions [IO ()] to run
+
+#+begin_src hs
+data ExtendedWindowInfo = ExtendedWindowInfo
+    { wiTitle :: String
+    , wiTags :: [String]
+    }
+    
+data ExtendedXState = ExtendedXState { xsWindows :: [ExtendedWindowInfo] }
+
+-- | Builds an ExtendedXState from the current XState
+extendedXState :: X ExtendedXState
+extendedXState = do
+  let getWindowName w = do name <- getName w
+                           return $ show name
+      makeWindowInfo w = do name <- getWindowName w
+                            tags <- getTags w
+                            return $ ExtendedWindowInfo { name, tags }
+  all_windows <- gets windowset
+  wins <- mapM makeWindowInfo (W.allWindows all_windows)
+  return ExtendedXState { wins }
+#+end_src   
+
+#  LocalWords:  xmonad ExtendedXState Eq
