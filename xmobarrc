@@ -23,5 +23,5 @@ Config { font = "xft:Pragmata Pro-8"  -- "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ ⋆ CPU: %cpufreq% → %multicpu% | %memory% %swap% | %wlan0wi% | Bat Tm: %battery% | EWR: %KEWR%° | %date%"
+       , template = "_%StdinReader% }{ ⋆ CPU: %cpufreq% → %multicpu% | %memory% %swap% | %wlan0wi% | Bat Tm: %battery% | EWR: %KEWR%° | %date%"
        }

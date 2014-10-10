@@ -17,7 +17,7 @@ import Support.Types
 {- Where we put in all the application state we care about.  This will
    probably soon include our view of the world (or just the TVar) -} 
 data IPCServer = IPCServer
-    { commandChan :: TVar ([X ()])
+    { commandChan :: TVar ([Display -> X ()])
     , stateChan :: TVar ExtendedXState
     , notifyPipe :: Fd }
     
@@ -27,20 +27,26 @@ mkYesod "IPCServer" [parseRoutes|
 
 instance Yesod IPCServer
 
-getHomeR :: Handler Html
-getHomeR = defaultLayout $ do
-    -- Set the HTML <title> tag.
-    setTitle "IPC for XMonad"
-    server <- ask
-    state <- liftIO $ atomically $ readTVar $ stateChan server
-    -- Hamlet is the standard HTML templating language used by Yesod.
-    -- In this case, we include some specific markup to take advantage of
-    -- the bootstrap CSS we just included.
-    -- For more information on Hamlet, please see:
-    -- http://www.yesodweb.com/book/shakespearean-templates
-    [whamlet|
-        <h1>XMonad
-    |]
+getHomeR :: Handler TypedContent
+getHomeR = do
+  server <- ask
+  state <- liftIO $ atomically $ readTVar $ stateChan server
+  selectRep $ do
+    provideRep $ return $ [shamlet|
+       <html>
+          <head>
+             <title>IPC for XMonad
+          <body>   
+             <h1>XMonad
+             <ul>
+                $forall winInfo <- xsWindows state
+                   <li> <b>#{wiTitle winInfo}</b> (#{show $ wiWinId winInfo}) -
+                        #{show $ wiTags winInfo}
+      |]
+    provideRep $ return $ object [ "windows" .= [object
+        [ "title" .= wiTitle winInfo, "id" .= wiWinId winInfo
+        , "tags" .= wiTags winInfo] | winInfo <- xsWindows state ]]
 
-runIPCServer :: Fd -> TVar ExtendedXState -> TVar ([X ()]) -> IO ()
-runIPCServer notifyPipe inState outCmd = warp 3000 (IPCServer outCmd inState notifyPipe)
+runIPCServer :: Fd -> TVar ExtendedXState -> TVar ([Display -> X ()]) -> IO ()
+runIPCServer notifyPipe inState outCmd = warp 3000 (
+  IPCServer outCmd inState notifyPipe)

@@ -151,3 +151,48 @@ extendedXState = do
 #+end_src   
 
 #  LocalWords:  xmonad ExtendedXState Eq
+
+* Auto-Tagging
+** General System
+   Using [[http://hackage.haskell.org/package/configurator-0.2.0.2/docs/Data-Configurator.html][Data.Configurator]], have a config-file syntax, that allows nesting
+   identifiers.
+*** Syntax
+   wm_class_value {
+     # if we also run the _default class tag definition.
+     option_default = true  # true is the default value of the option
+     # implicitly for title of window
+     tag = regex;
+     tag = regex;
+     _X_PROPS = {
+       WM_OTHER = {
+
+       }
+     _OTHER_PLUGIN = {
+       plugin-specific props
+     }
+   }
+   default {
+     # used for every window, unless option_default was set to false in a match
+     # block.
+   }
+*** Chrome Plugin
+    Works with a chrome app ?
+**** App has a TCP server
+     TCP Server sends
+     window bounds {
+       list of urls
+     }
+     for each open browser window
+
+** Integration
+*** Evaluate Matchers as part of extended refresh
+    The refresh is already written.  It just needs to load the matchers and
+    evaluate.
+
+* Performance
+** Why's it eating up memory?
+   I'm not freeing up the X resources.  They're showing up as PINNED
+   in hp2any-manager.
+   - The rest is in doLayout/pureLayout.  That'll be something else to
+     look into.
+

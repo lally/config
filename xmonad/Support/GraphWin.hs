@@ -1,4 +1,4 @@
-module Support.GraphWin where
+module Support.GraphWin (windowMap, showWindows) where
 
 import System.Process
 import XMonad

@@ -1,0 +1,36 @@
+#+TITLE: Visualization Display Agent
+
+* Description
+  The VDA runs a webserver and a dbus-listening daemon.  It pops up
+  visualizations as requested by dbus.  The visualizations show up on
+  pop-up windows that run webkit.
+
+* Structure
+** API
+   /ly/lal/
+*** Window Management
+    /win
+**** /win/tags
+     Tag manaement UI
+     - Calls REST apis on the same host for the window manager.
+**** /win/spaces
+     Workspace manager (?)
+
+*** Data Display
+    /data
+**** basic types
+     e.g., bar, line, etc.
+     Maybe a basic explorer ?
+** Webserver
+   A yesod app running in parallel
+*** A different single-page webapp per visualization
+    - Use the URL to configure it
+    - The launcher (called from dbus) will configure the window's URL
+      appropriately from parameters.
+
+** Window Display
+   Try to tweak what's shown, the frame and size should be right
+   - Preferably no frame (easy in xmonad)
+     - POPUP class
+   - Size may be determined algorithmically, or just a viz that fits
+     in a static space.

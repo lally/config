@@ -106,6 +106,7 @@ the form (display key-protocol hex-string)"
 )
 ;; Stuff in config/libs/*
 (add-to-list 'load-path "~/config/libs/site-lisp")
+(add-to-list 'load-path "~/config/libs/site-lisp/emacs-ctable")
 ;; (if (file-exists-p "~/config/libs/site-lisp/haskell-mode")
 ;;     (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
 
@@ -126,15 +127,14 @@ the form (display key-protocol hex-string)"
       ;; Any add to list for package-archives (to add marmalade or melpa) goes here
       (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
       (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-      ; (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+      (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
       (package-initialize)
       ))
-
 
 ;; IDO, for my enhanced buffer management.
 (require 'ido)
 (ido-mode t)
-(global-ede-mode 1)                      ; Enable the Project management system
+; (global-ede-mode 1)                      ; Enable the Project management system
 
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
@@ -158,8 +158,12 @@ the form (display key-protocol hex-string)"
 ;; GDB Setup
 (setq gdb-command-name "gdb --nx")
 (setq gdb-create-source-file-list nil)
+
+;; Org and related packages.
+(require 'ctable)
 (require 'column-marker)
 (require 'fic-mode)
+(require 'org-manage)
 (require 'org-install)
 (require 'org-habit)
 (require 'org-protocol)
@@ -168,26 +172,26 @@ the form (display key-protocol hex-string)"
 ;;============================================================
 ;; SEMANTICDB SETUP
 ;;============================================================
-(global-ede-mode 1)                      ; Enable the Project management system
+; (global-ede-mode 1)                      ; Enable the Project management system
 ;(semantic-load-enable-gaudy-code-helpers)      ; Enable prototype help and
 ;                                               ; smart completion
-(setq semantic-stickyfunc-mode 1)
-(setq semantic-decoration-mode 1)
-(setq semantic-idle-completion-mode nil)
+; (setq semantic-stickyfunc-mode 1)
+; (setq semantic-decoration-mode 1)
+; (setq semantic-idle-completion-mode nil)
 ;(global-srecode-minor-mode 1)            ; Enable template insertion menu
 
 ;(add-hook 'python-mode-hook 'turn-on-fic-mode)
 
-(require 'semantic/ia)
+; (require 'semantic/ia)
 ; (require 'semantic/gcc)
-(require 'semantic/db)
-(global-semanticdb-minor-mode 1)
-(semanticdb-enable-gnu-global-databases 'c-mode)
-(semanticdb-enable-gnu-global-databases 'c++-mode)
+; (require 'semantic/db)
+; (global-semanticdb-minor-mode 1)
+; (semanticdb-enable-gnu-global-databases 'c-mode)
+; (semanticdb-enable-gnu-global-databases 'c++-mode)
 ;; Remove semanticdb-save-all-db-idle from the auto-save-hook.  It looks
 ;; to be my stalling problem.  I blame NFS.
-(remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
-(set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
+; (remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
+; (set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
 
 
 ;;---------------------------------------------------------------------- 
@@ -197,16 +201,45 @@ the form (display key-protocol hex-string)"
 ;(load "~/local/haskell-mode-2.4/haskell-site-file")
 ;(load "~/local/share/emacs/site-lisp/twit.el")
 (require 'inf-haskell)
+(require 'mmm-mode)
 
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
-(add-hook 'haskell-mode-hook 'font-lock-mode)
-(add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+;; (add-hook 'haskell-mode-hook 'font-lock-mode)
+;; (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
+(add-hook 'haskell-mode-hook 'my-mmm-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+
+; literate haskell (.lhs) support.
+(mmm-add-classes
+ '((literate-haskell-bird
+    :submode text-mode
+    :front "^[^>]"
+    :include-front true
+    :back "^>\\|$"
+    )
+   (literate-haskell-latex
+    :submode literate-haskell-mode
+    :front "^\\\\begin{code}"
+    :front-offset (end-of-line 1)
+    :back "^\\\\end{code}"
+    :include-back nil
+    :back-offset (beginning-of-line -1)
+    )))
+
+(defun my-mmm-mode ()
+  ;; go into mmm minor mode when class is given
+  (make-local-variable 'mmm-global-mode)
+  (setq mmm-global-mode 'true))
+
+(setq mmm-submode-decoration-level 1)
+
+; NOTE: to propery haskell-ify a class, try M-x mmm-ify-by-class ->
+; literate-haskell-latex I did just comment out almost all dhte
+; (add-hook 'haskell*) above, so that may have broken something.
 
 ;(require 'light-symbol)
 ;(fringe-mode "left-only")
-(add-hook 'c++-mode-hook 'turn-on-fic-mode)
 (fringe-mode '(16 . 0))
 
 (setq ido-max-directory-size 100000) ;; in _bytes_, not dirents.
@@ -257,6 +290,7 @@ the form (display key-protocol hex-string)"
   (column-marker-1 79)
   (set-fringe-mode '(1 . 1))
   (linum-mode)
+  (set-variable 'show-trailing-whitespace t)
   (flyspell-prog-mode)
 ;
 ; Ooooh, this is nice, but I may get tired of it.
@@ -277,7 +311,7 @@ the form (display key-protocol hex-string)"
 
 (defun local-typescript-mode-hook()
   (interactive)
-  (tss-setup-current-buffer)
+  ; (tss-setup-current-buffer)
   (hs-minor-mode 1)
 )
 
@@ -431,7 +465,7 @@ the form (display key-protocol hex-string)"
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
  '(gdb-speedbar-auto-raise t)
- '(haskell-program-name "ghci")
+ '(haskell-program-name "cabal repl")
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
  '(inhibit-startup-screen t)
@@ -441,6 +475,7 @@ the form (display key-protocol hex-string)"
  '(safe-local-variable-values (quote ((org-use-property-inheritance . t))))
  '(show-paren-mode t)
  '(tool-bar-mode nil)
+ '(show-trailing-whitespace t)
  '(tss-jump-to-definition-key "C->")
  '(tss-popup-help-key "C-:"))
 
@@ -520,6 +555,7 @@ the form (display key-protocol hex-string)"
 ;;============================================================
 ;(require 'org-install)
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(add-to-list 'auto-mode-alist '("\\.lhs\\'" . latex-mode))
 (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
@@ -657,7 +693,7 @@ the form (display key-protocol hex-string)"
 (global-set-key [f5] 'magit-status)
 
 (global-set-key [f12] 'compile)
-(global-set-key [S-f12] 'magit-status)
+(global-set-key [S-f12] 'recompile)
 
 ;(global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "C-c C-h") 'hs-toggle-hiding)

@@ -22,3 +22,6 @@
 [submodule "tools/hlint"]
 	path = tools/hlint
 	url = https://github.com/ndmitchell/hlint.git
+[submodule "libs/site-lisp/emacs-ctable"]
+	path = libs/site-lisp/emacs-ctable
+	url = https://github.com/kiwanami/emacs-ctable.git
