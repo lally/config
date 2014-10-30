@@ -5,6 +5,8 @@ module Support.Launch where
 import Control.Concurrent
 import Control.Concurrent.STM.TVar
 import Control.Monad.STM
+import Control.Monad.State.Strict
+
 import Data.Maybe
 import System.IO (stderr)
 import System.Log.Logger
@@ -28,40 +30,103 @@ import qualified Data.Set as S
 import qualified Graphics.X11.Xlib.Extras as XE
 import qualified Recognize as R
 
+data AtomCache = AtomCache { atomSeqno :: Int
+                           , atomMap :: M.Map Atom (Int, String)
+                           } deriving (Eq, Show)
+
+-- Plan
+-- ----
+
+-- Implement an atom cache.  I'm looking for a way to determine which
+-- atoms are no longer used, and to reuse the lookups I've already
+-- done.  Actually, copy them to local strings and kill them
+-- immediately.  Use the cache for performance.
+
+
+wrappedAtomName :: Display -> Atom -> IO String
+wrappedAtomName dpy atom = do
+  atomName <- getAtomName dpy atom
+  if (isNothing atomName)
+    then return ""
+    else return $ fromJust atomName
+
+startLookups :: AtomCache -> AtomCache
+startLookups prior = prior { atomSeqno = 1 + (atomSeqno prior) }
+
+lookupAtom :: Display -> Atom -> X String
+lookupAtom dpy atom = undefined
+{-  do
+  cache <- get
+  let newSeqNo = atomSeqno cache
+      lookupRes = M.lookup atom $ atomMap cache
+      setKey k (n, s) = (newSeqNo, s)
+      mapCache = atomMap cache
+
+  str <- if isJust lookupRes
+         then return $ snd $ fromJust lookupRes
+         else liftIO $ wrappedAtomName dpy atom
+
+  let updatedMap = if isJust lookupRes
+                   then M.adjustWithKey setKey atom mapCache
+                   else M.insert atom (newSeqNo, str) mapCache
+  put (cache { atomMap = updatedMap })
+  return str
+-}
+finishLookups :: AtomCache -> AtomCache
+finishLookups prior =
+  let threshold = atomSeqno prior
+      filteredMap = M.filterWithKey (\k (seq,s) -> seq == threshold) $ atomMap prior
+  in prior { atomMap = filteredMap }
+
 -- | Construct a WindowInfo for a window.  Mostly coddled together
 -- from xprop(1) sources.
 getWinInfo :: Display -> Window -> X WindowInfo
 getWinInfo dpy win = do
-  let propsForWindow atom = do
-        textProp <- getTextProperty dpy win atom
-        atomName <- getAtomName dpy atom
-        if (isNothing atomName)
-           then return []
-           else textPropertyToStringList textProp
+  -- MEMORY: Note: #3 in profiler for memory comes from textPropertyToStringList.
+  let propsForWindow :: Atom -> X [String]
+      propsForWindow atom = do
+        cache <- get
+        textProp <- liftIO $ getTextProperty dpy win atom
+        atomName <- return "" -- lookupAtom dpy atom
+        result <- liftIO $ textPropertyToStringList textProp
+        return result
+
+      {-propsForWindowAtoms :: [Atom] -> StateT AtomCache X [String]
+      propsForWindowAtoms (atom:atoms) =
+        do name <- propsForWindow atom
+           otherNames <- propsForWindowAtoms atoms
+           return name:otherNames 
+
+      lookupAtomNames:: [Atom] -> StateT AtomCache X [String]
+      lookupAtomNames (atom:atoms) =
+        do name <- lookupAtom dpy atom
+           rest <- lookupAtomNames atoms
+           return name:rest -}
+
   winPropertyAtoms <- io $ listProperties dpy win
-  winPropertyNames <- io $ getAtomNames dpy winPropertyAtoms
-  winPropertyValues <- io $ mapM propsForWindow winPropertyAtoms
+  winPropertyNames <- mapM (lookupAtom dpy) winPropertyAtoms
+  winPropertyValues  <- mapM propsForWindow winPropertyAtoms
   return $ M.fromList $ zip winPropertyNames winPropertyValues
 
 -- | Construct a ExtendedWindowInfo for a window.  Any prior wiAppTags
 -- will have to get added back in.
 queryWindow :: Display -> R.MatcherSet -> Window -> X ExtendedWindowInfo
 queryWindow dpy matchers win = do
-  name <- getName win
-  tags <- getTags win
-  -- Construct a WindowInfo and match tags against it.
-  winInfo <- getWinInfo dpy win
-  matchedTags <- io $ R.matchTags matchers winInfo
-  return ExtendedWindowInfo {
-    wiTitle = (show name),
-    wiUserTags = tags,
-    wiDynamicTags = matchedTags,
-    wiAppTags = [],  -- TODO: load any previous app tags from the prior
-                     -- state
-    wiWinId = win }
+    name <- getName win
+    tags <- getTags win
+    -- Construct a WindowInfo and match tags against it.
+    winInfo <- getWinInfo dpy win
+    matchedTags <- io $ R.matchTags matchers winInfo
+    return ExtendedWindowInfo {
+        wiTitle = (show name),
+        wiUserTags = tags,
+        wiDynamicTags = matchedTags,
+        wiAppTags = [],  -- TODO: load any previous app tags from the prior
+                         -- state
+        wiWinId = win }
 
 -- | Monitor Thread.  At 10 Hz, look for changes in the XState and
--- update the ExtendedXState.  At 1 Hz, update the ExtendedXState. 
+-- update the ExtendedXState.  At 1 Hz, update the ExtendedXState.
 monitorThread ::
   TState ->        -- ^ XState updated from xmonad
   TXState ->       -- ^ ExtendedXState maintained by monitorThread
@@ -69,9 +134,10 @@ monitorThread ::
   TActions ->      -- ^ Action queue used to have things run in X monad
   R.MatcherSet ->  -- ^ Tag Matcher configuration
   IO ()
-monitorThread stateTVar extendedStateTVar fdNotify actionQueueTVar matchers = 
+monitorThread stateTVar extendedStateTVar fdNotify actionQueueTVar matchers =
   monitorThread' S.empty 1
   where
+    -- TODO: Lally: The action queue (TActions) needs to be StateT AtomCache X .., not just X ...
     updateExtendedState :: Display -> X ()
     updateExtendedState dpy = do
       mxstate <- io $ atomically $ readTVar stateTVar
@@ -93,12 +159,12 @@ monitorThread stateTVar extendedStateTVar fdNotify actionQueueTVar matchers =
       let curWindowSet = maybe S.empty mapped mcurState
           setDirty = priorWindowSet /= curWindowSet
       if setDirty || (0 == (seqNo `mod` 10))
-         then do io $ atomically $ do
+         then do atomically $ do
                    actionQueue <- readTVar actionQueueTVar
                    writeTVar actionQueueTVar $
-                     actionQueue ++ [updateExtendedState]
-                 io $ infoM "monitorThread.monitorThread'" "Queuing an update"
-                 io $ fdWrite fdNotify "M"
+                     actionQueue -- ++ [updateExtendedState]
+                 infoM "monitorThread.monitorThread'" "Queuing an update"
+                 fdWrite fdNotify "M"
                  return ()
          else return ()
       monitorThread' curWindowSet (1 + seqNo)

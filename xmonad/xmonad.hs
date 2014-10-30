@@ -225,7 +225,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_l     ),
                   spawn "qdbus org.freedesktop.ScreenSaver /ScreenSaver Lock")
 
-    -- prodaccess
+
+    -- Clean restart, useful when in profiling mode.
+    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+
+      -- prodaccess
     , ((modm .|. controlMask, xK_p    ), getProdAccess)
     ]
     ++

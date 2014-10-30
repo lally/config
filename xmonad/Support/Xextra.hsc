@@ -30,11 +30,11 @@ foreign import ccall unsafe "XlibExtras.h XTextPropertyToStringList"
 
 foreign import ccall unsafe "XlibExtras.h XFreeStringList"
     xFreeStringList :: Ptr CString -> IO ()
-                       
+
 textPropertyToStringList :: TextProperty -> IO [String]
 textPropertyToStringList textProp = do
   alloca $ \textPropP -> do  -- pointer to textProp
-  alloca $ \stringCountP -> do -- dest pointer for string count 
+  alloca $ \stringCountP -> do -- dest pointer for string count
   alloca $ \rawStringsP -> do -- destination pointer for strings
     poke textPropP textProp
     poke stringCountP 0
@@ -43,7 +43,7 @@ textPropertyToStringList textProp = do
        then do
             -- not a text property atom.
             return []
-       else do     
+       else do
             stringCount <- peek stringCountP
             rawStrings <- peek rawStringsP
             strings <- peekArray (fromIntegral $ stringCount) rawStrings

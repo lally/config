@@ -17,7 +17,7 @@ import XMonad.Core
 -- properties attached to the window.
 data Tag = Tag String
          deriving Eq
-                  
+
 instance Show Tag where
   show (Tag str) = str
 
@@ -33,7 +33,7 @@ data ExtendedWindowInfo = ExtendedWindowInfo
                               -- user applied through the TagWindows
                               -- extension
     , wiDynamicTags :: [Tag]  -- ^Dynamically matched tags from user rules.
-    , wiAppTags :: [Tag]      -- ^Program-added tags 
+    , wiAppTags :: [Tag]      -- ^Program-added tags
     , wiWinId :: Window       -- ^Raw window identifier.
     } deriving Show
 
