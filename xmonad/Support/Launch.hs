@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, BangPatterns #-}
+{-# LANGUAGE FlexibleContexts, BangPatterns, DeriveDataTypeable #-}
 
 module Support.Launch where
 
@@ -19,6 +19,7 @@ import XMonad
 import XMonad.Actions.TagWindows (getTags, setTags)
 import XMonad.Core
 import XMonad.Util.NamedWindows (getName)
+import qualified XMonad.Util.ExtensibleState as XS
 
 import Support.Types
 import Support.Xextra
@@ -32,7 +33,10 @@ import qualified Recognize as R
 
 data AtomCache = AtomCache { atomSeqno :: Int
                            , atomMap :: M.Map Atom (Int, String)
-                           } deriving (Eq, Show)
+                           } deriving (Eq, Show, Typeable)
+
+instance ExtensionClass AtomCache where
+  initialValue = AtomCache 0 (M.fromList [])
 
 -- Plan
 -- ----
@@ -54,9 +58,8 @@ startLookups :: AtomCache -> AtomCache
 startLookups prior = prior { atomSeqno = 1 + (atomSeqno prior) }
 
 lookupAtom :: Display -> Atom -> X String
-lookupAtom dpy atom = undefined
-{-  do
-  cache <- get
+lookupAtom dpy atom = do
+  cache <- XS.get
   let newSeqNo = atomSeqno cache
       lookupRes = M.lookup atom $ atomMap cache
       setKey k (n, s) = (newSeqNo, s)
@@ -69,9 +72,9 @@ lookupAtom dpy atom = undefined
   let updatedMap = if isJust lookupRes
                    then M.adjustWithKey setKey atom mapCache
                    else M.insert atom (newSeqNo, str) mapCache
-  put (cache { atomMap = updatedMap })
+  XS.put (cache { atomMap = updatedMap })
   return str
--}
+
 finishLookups :: AtomCache -> AtomCache
 finishLookups prior =
   let threshold = atomSeqno prior
@@ -87,7 +90,7 @@ getWinInfo dpy win = do
       propsForWindow atom = do
         cache <- get
         textProp <- liftIO $ getTextProperty dpy win atom
-        atomName <- return "" -- lookupAtom dpy atom
+        atomName <- lookupAtom dpy atom
         result <- liftIO $ textPropertyToStringList textProp
         return result
 
