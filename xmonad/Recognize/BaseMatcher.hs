@@ -21,14 +21,14 @@ data MatcherImpl
       -- | A plugin matcher.
     | Plugin { pPluginName :: String
              , pOperator :: WindowInfo -> IO ([Tag])
-             , pParams :: DCT.Value 
+             , pParams :: DCT.Value
                -- ^ The params here were fed into the matcher at
                -- construction time.  We only keep them here for the
                -- Show instance.
              }
-  
+
 instance Show MatcherImpl where
-    show RegexMatch { mcTag = tag, mcRegexSpec = regex } = 
+    show RegexMatch { mcTag = tag, mcRegexSpec = regex } =
          (tagString tag) ++ "= regex(" ++ (show regex) ++ ")"
     show Plugin { pPluginName = plugin, pParams = params } =
         "PLUGIN " ++ plugin ++ ", Params: " ++ show params
@@ -95,7 +95,7 @@ buildMatchersForClass config cls = do
       where strippedName = T.takeWhile (/= '.') name
     (regexMatcherKeys, pluginMatcherKeys) =
       partitionEithers $ map isPluginKey $ zip matchedDefaultOptions allMatchKeys
-                       
+
   regexMatchers <- mapM (makeRegexMatcher config) regexMatcherKeys
   pluginMatchers <- mapM (makePluginMatcher config) pluginMatcherKeys
   return $ catMaybes $ concat [regexMatchers, pluginMatchers]
@@ -107,7 +107,7 @@ buildMatchers config = do
     classNames = nub $ map (T.takeWhile (/= '.')) $ HM.keys kvmap
   matchers <- mapM (buildMatchersForClass kvmap) classNames
   let
-    matcherKVs = zip (map T.unpack classNames) matchers 
+    matcherKVs = zip (map T.unpack classNames) matchers
   return $ M.fromList matcherKVs
 
 concatMaybesIO :: Monad m => (a -> m (Maybe b)) -> [a] -> m ([b])
@@ -133,7 +133,7 @@ runMatcher winInfo Matcher { mImpl = impl } = do
                  either funFalse (maybe False funTrue) val
            if any mapResult regexMatches
               then return [tag]
-              else return []     
+              else return []
       (Plugin { pOperator = op }) ->
         op winInfo
 
@@ -148,7 +148,7 @@ matchTags matchers wininfo = do
       defaultMatcher = M.lookup "default" matchers
       xm_defaults = map (\cls -> cls ++ ".option_default") wm_classes
       defaultsForAlwaysExcludedInMatches :: Bool
-      defaultsForAlwaysExcludedInMatches = 
+      defaultsForAlwaysExcludedInMatches =
           all mDefault $ concat $ catMaybes $
           map ((flip M.lookup) matchers) xm_defaults
       hasDefault = isJust defaultMatcher
@@ -171,4 +171,5 @@ loadConfig = do
                              ])
                     failHandler
   matchers <- buildMatchers config
+  putStrLn $ "Loaded Matchers " ++ (show matchers)
   return matchers

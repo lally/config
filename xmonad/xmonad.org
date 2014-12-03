@@ -189,10 +189,19 @@ extendedXState = do
     The refresh is already written.  It just needs to load the matchers and
     evaluate.
 
+** BUGS
+*** TODO Only returns windows on a mapped desktop
+    (or the current one?)
+* XMonad Core
+** TODO Separate out eventAgent and stuff from core xmonad
+** TODO prepare a diff for xmonad.
+** TODO submit.
+
 * Performance
-** Why's it eating up memory?
+** Why's it eating up memory?                                :PARTIALLYFIXED:
    I'm not freeing up the X resources.  They're showing up as PINNED
    in hp2any-manager.
    - The rest is in doLayout/pureLayout.  That'll be something else to
      look into.
+   - A cache for atoms seems to have stemmed the tide.
 

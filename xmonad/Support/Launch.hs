@@ -94,18 +94,6 @@ getWinInfo dpy win = do
         result <- liftIO $ textPropertyToStringList textProp
         return result
 
-      {-propsForWindowAtoms :: [Atom] -> StateT AtomCache X [String]
-      propsForWindowAtoms (atom:atoms) =
-        do name <- propsForWindow atom
-           otherNames <- propsForWindowAtoms atoms
-           return name:otherNames 
-
-      lookupAtomNames:: [Atom] -> StateT AtomCache X [String]
-      lookupAtomNames (atom:atoms) =
-        do name <- lookupAtom dpy atom
-           rest <- lookupAtomNames atoms
-           return name:rest -}
-
   winPropertyAtoms <- io $ listProperties dpy win
   winPropertyNames <- mapM (lookupAtom dpy) winPropertyAtoms
   winPropertyValues  <- mapM propsForWindow winPropertyAtoms
@@ -172,6 +160,42 @@ monitorThread stateTVar extendedStateTVar fdNotify actionQueueTVar matchers =
          else return ()
       monitorThread' curWindowSet (1 + seqNo)
 
+fetchAgent :: Fd -> Fd -> TActions -> TState -> Display -> XEventPtr -> X Event
+-- fdNotify is a notify pipe.  Any data on there indicates
+-- that we have data to consume from inCMD.
+fetchAgent fdNotify fdDpy inCmd outState dpy e = do
+  numQueuedEvents <- io $ pending dpy
+  if numQueuedEvents <= 0
+     then repeatedRead  -- refill the X event queue.
+     else return ()
+  io $ nextEvent dpy e
+  event <- io $ getEvent e
+  return event
+  where
+    repeatedRead :: X ()
+    repeatedRead =
+      do selectResult <- io $ select' [fdNotify, fdDpy] [] [] (
+           ST.Time $ ST.CTimeval 10 0)
+         xstate <- get
+         io $ atomically $ do writeTVar outState $ Just xstate
+         let readFds = sel1 $ fromMaybe ([],[],[]) selectResult
+         if fdNotify `elem` readFds
+            then do (_,_) <- io $ fdRead fdNotify 128
+                    ops <- io $ atomically $ do ops' <- readTVar inCmd
+                                                writeTVar inCmd []
+                                                return ops'
+                    io $ infoM "xmonad.repeatedRead" $
+                      "xmonad: Running " ++ (show $ length ops) ++
+                      " actions"
+                    mapM (\f -> f dpy) ops
+                    return ()
+            else return ()
+         -- Repeat as long as we don't have data to read from
+         -- the display's FD
+         if fdDpy `notElem` readFds
+            then repeatedRead
+            else return ()
+
 -- | Launches XMonad with the configuration given, an IPC server, and
 -- a separate monitor thread.  Also configures the root logger
 launchXMonad :: (LayoutClass l Window, Read (l Window)) => XConfig l -> IO ()
@@ -194,4 +218,4 @@ launchXMonad config = do
     forkIO $
     monitorThread stateTVar xstateTVar wrEnd actionQueueTVar matcherSet
   ipcThreadID <- forkIO $ runIPCServer wrEnd xstateTVar actionQueueTVar
-  xmonad readEnd actionQueueTVar stateTVar config
+  xmonadCustom (fetchAgent readEnd actionQueueTVar stateTVar) config
