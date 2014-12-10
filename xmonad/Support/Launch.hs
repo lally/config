@@ -8,16 +8,24 @@ import Control.Monad.STM
 import Control.Monad.State.Strict
 
 import Data.Maybe
+import Data.Tuple.Select (sel1)
+import Graphics.X11.Types (Atom, Window)
+import Graphics.X11.Xlib (Display)
+import Graphics.X11.Xlib.Atom (getAtomName)
+import Graphics.X11.Xlib.Display (connectionNumber)
 import System.IO (stderr)
 import System.Log.Logger
 import System.Log.Handler.Simple
 import System.Log.Handler (setFormatter)
 import System.Log.Formatter
-import System.Posix.IO (createPipe, fdWrite)
+import System.Posix.IO (createPipe, fdWrite, fdRead)
+import System.Posix.IO.Select (select')
 import System.Posix.Types
-import XMonad
+import qualified System.Posix.IO.Select.Types as ST
+import XMonad (xmonadCustom, pending, nextEvent, XEventPtr(..))
 import XMonad.Actions.TagWindows (getTags, setTags)
 import XMonad.Core
+import XMonad.StackSet (index, integrate', hidden, stack)
 import XMonad.Util.NamedWindows (getName)
 import qualified XMonad.Util.ExtensibleState as XS
 
@@ -89,7 +97,7 @@ getWinInfo dpy win = do
   let propsForWindow :: Atom -> X [String]
       propsForWindow atom = do
         cache <- get
-        textProp <- liftIO $ getTextProperty dpy win atom
+        textProp <- liftIO $ XE.getTextProperty dpy win atom
         atomName <- lookupAtom dpy atom
         result <- liftIO $ textPropertyToStringList textProp
         return result
@@ -101,8 +109,8 @@ getWinInfo dpy win = do
 
 -- | Construct a ExtendedWindowInfo for a window.  Any prior wiAppTags
 -- will have to get added back in.
-queryWindow :: Display -> R.MatcherSet -> Window -> X ExtendedWindowInfo
-queryWindow dpy matchers win = do
+queryWindow :: Display -> R.MatcherSet -> Bool -> Window -> X ExtendedWindowInfo
+queryWindow dpy matchers mapped win = do
     name <- getName win
     tags <- getTags win
     -- Construct a WindowInfo and match tags against it.
@@ -114,7 +122,18 @@ queryWindow dpy matchers win = do
         wiDynamicTags = matchedTags,
         wiAppTags = [],  -- TODO: load any previous app tags from the prior
                          -- state
+        wiMapped = mapped,
         wiWinId = win }
+
+allWindows :: XState -> [Window]
+allWindows xstate =
+  let wsOfScreen s = workspaces s
+      windowsOfWs ws = integrate' ws
+      cur = index $ windowset xstate
+            -- index for Window Sets
+            -- integrate for Stacks.
+      mapped = concatMap (windowsOfWs . stack) $ hidden $ windowset xstate
+  in cur ++ mapped
 
 -- | Monitor Thread.  At 10 Hz, look for changes in the XState and
 -- update the ExtendedXState.  At 1 Hz, update the ExtendedXState.
@@ -128,16 +147,18 @@ monitorThread ::
 monitorThread stateTVar extendedStateTVar fdNotify actionQueueTVar matchers =
   monitorThread' S.empty 1
   where
-    -- TODO: Lally: The action queue (TActions) needs to be StateT AtomCache X .., not just X ...
     updateExtendedState :: Display -> X ()
     updateExtendedState dpy = do
       mxstate <- io $ atomically $ readTVar stateTVar
       exstate <- case mxstate of
                   Nothing -> return ExtendedXState { xsWindows = [] }
                   Just xstate ->  do
-                    windowXStates <- mapM (queryWindow dpy matchers) $ S.elems $
-                                     mapped xstate
-                    return ExtendedXState { xsWindows = windowXStates }
+                    let allWins = allWindows xstate
+                        mappedWins = S.elems $ mapped xstate
+                        unmappedWins = allWins L.\\ mappedWins
+                    mappedWindowXStates <- mapM (queryWindow dpy matchers True) mappedWins
+                    unmappedWindowXStates <- mapM (queryWindow dpy matchers False) unmappedWins
+                    return ExtendedXState { xsWindows = mappedWindowXStates ++ unmappedWindowXStates }
       io $ infoM "monitorThread.updateExtendedState'" $
         ": ExtendedXState: " ++ (show exstate)
       io $ atomically $ writeTVar extendedStateTVar exstate
@@ -153,25 +174,26 @@ monitorThread stateTVar extendedStateTVar fdNotify actionQueueTVar matchers =
          then do atomically $ do
                    actionQueue <- readTVar actionQueueTVar
                    writeTVar actionQueueTVar $
-                     actionQueue -- ++ [updateExtendedState]
-                 infoM "monitorThread.monitorThread'" "Queuing an update"
+                     actionQueue ++ [updateExtendedState]
+                 io $ infoM "monitorThread.monitorThread'" "Queuing an update"
                  fdWrite fdNotify "M"
                  return ()
          else return ()
       monitorThread' curWindowSet (1 + seqNo)
 
-fetchAgent :: Fd -> Fd -> TActions -> TState -> Display -> XEventPtr -> X Event
+fetchAgent :: Fd -> TActions -> TState -> Display -> XEventPtr -> X XE.Event
 -- fdNotify is a notify pipe.  Any data on there indicates
 -- that we have data to consume from inCMD.
-fetchAgent fdNotify fdDpy inCmd outState dpy e = do
+fetchAgent fdNotify inCmd outState dpy e = do
   numQueuedEvents <- io $ pending dpy
   if numQueuedEvents <= 0
      then repeatedRead  -- refill the X event queue.
      else return ()
   io $ nextEvent dpy e
-  event <- io $ getEvent e
+  event <- io $ XE.getEvent e
   return event
   where
+    fdDpy = Fd $ fromIntegral $ connectionNumber dpy
     repeatedRead :: X ()
     repeatedRead =
       do selectResult <- io $ select' [fdNotify, fdDpy] [] [] (

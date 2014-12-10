@@ -35,6 +35,7 @@ data ExtendedWindowInfo = ExtendedWindowInfo
     , wiDynamicTags :: [Tag]  -- ^Dynamically matched tags from user rules.
     , wiAppTags :: [Tag]      -- ^Program-added tags
     , wiWinId :: Window       -- ^Raw window identifier.
+    , wiMapped :: Bool        -- ^Whether it's currently mapped.
     } deriving Show
 
 wiTags winInfo = nub $ (wiUserTags winInfo) ++

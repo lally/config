@@ -183,15 +183,22 @@ extendedXState = do
        list of urls
      }
      for each open browser window
-
+**** Window ID / Geometry is pretty good handle
+**** I can get the tabs under each window easily.
+**** Transmit at 1 Hz?
+** Emacs Plugin
+   Same as chrome plugin, buffer URL per frame
 ** Integration
 *** Evaluate Matchers as part of extended refresh
     The refresh is already written.  It just needs to load the matchers and
     evaluate.
 
 ** BUGS
-*** TODO Only returns windows on a mapped desktop
+*** DONE Only returns windows on a mapped desktop
     (or the current one?)
+*** TODO Doesn't understand UTF-8 properties.
+    - [ ] Find out how it's represented in the api model
+    - [ ] Decoding should be trivial.
 * XMonad Core
 ** TODO Separate out eventAgent and stuff from core xmonad
 ** TODO prepare a diff for xmonad.

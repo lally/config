@@ -25,6 +25,3 @@ showWindows :: X ()
 showWindows = do
   allWindows <- windowMap
   io $ putStrLn $ join ", " $ map fst allWindows
-  
-  
-              

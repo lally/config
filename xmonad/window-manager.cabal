@@ -53,7 +53,7 @@ library
 
  build-depends:      base, xmonad == 0.12, xmonad-contrib > 0.10, process, stm, 
                      yesod, X11, hslogger, containers, unix, regex-pcre, 
-                     unordered-containers, configurator, text, mtl
+                     unordered-containers, configurator, text, mtl, select, tuple
  -- ghc-options:       -Wall
 
 executable super-xmonad
@@ -73,6 +73,7 @@ executable super-xmonad
   -- NOTE: gtk2hs-buildtools has to be installed globally (AFAICT)
   build-depends:       base >= 4.5.0, containers, xmonad, xmonad-contrib > 0.10, 
                        process, X11, stm, unix, yesod, hslogger, configurator, 
-                       unordered-containers, regex-pcre, text, window-manager, mtl
+                       unordered-containers, regex-pcre, text, window-manager, mtl,
+                       select, tuple
  -- gtk, transformers >= 0.3
   
