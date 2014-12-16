@@ -1,4 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
+-- | A tagger engine.  Currently only applicable to X Properties.
+-- It should get generalized (both in config file format and input
+-- applicability).  Specifically, to match URLs to tags.
 module Recognize.BaseMatcher (loadConfig, matchTags,
                               tagString, MatcherSet(..)) where
 import Control.Monad
