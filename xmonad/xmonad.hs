@@ -49,7 +49,7 @@ myFocusFollowsMouse = True
 
 -- Width of the window border in pixels.
 --
-myBorderWidth   = 4
+myBorderWidth   = 0
 
 -- modMask lets you specify which modkey you want to use. The default
 -- is mod1Mask ("left alt").  You may also consider using mod3Mask
@@ -96,7 +96,7 @@ greenColorizer = colorRangeFromClassName
 
 -- defaultGSConfig
 gsconfig = (buildDefaultGSConfig greenColorizer)  {
-             gs_font = "xft:Anka/Coder Condensed:pixelsize=12",
+             gs_font = "xft:PragmaticaPro:pixelsize=12",
              gs_cellheight = 30,
              gs_cellwidth = 300,
              gs_cellpadding = 15
@@ -287,7 +287,7 @@ myTheme = newTheme { themeName = "tronTheme"
                              , decoHeight = 24
                              , decoWidth = 300
 --                             , fontName = "xft:LMSansDemiCond10:pixelsize=12"
-                             , fontName = "xft:Anka/Coder Condensed:pixelsize=12"
+                             , fontName = "xft:PragmaticaPro:pixelsize=12"
                              }
                    }
 

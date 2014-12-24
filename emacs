@@ -65,7 +65,8 @@ the form (display key-protocol hex-string)"
 ;; When the site-libs are present
 (when (file-accessible-directory-p "~/config/libs")
   (progn
-    (add-to-list 'load-path "~/config/libs/magit-0.8.2")))
+    (add-to-list 'load-path "~/config/libs/magit-0.8.2")
+))
 
 
 ;; IDO, for my enhanced buffer management.
@@ -218,6 +219,25 @@ the form (display key-protocol hex-string)"
 (defun reverse-other-window ()
   (interactive)
   (other-window -1))
+
+;;============================================================
+;; Typescript setup
+;;============================================================
+;; If use bundled typescript.el,
+;(require 'typescript)
+;(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+
+;(require 'tss)
+
+;; Key binding
+;(setq tss-popup-help-key "C-:")
+;(setq tss-jump-to-definition-key "C->")
+
+;; Make config suit for you. About the config item, eval the following sexp.
+;; (customize-group "tss")
+
+;; Do setting recommemded configuration
+;(tss-config-default)
 
 
 ;;============================================================
@@ -598,7 +618,7 @@ the form (display key-protocol hex-string)"
 (set-foreground-color "white")
 (set-cursor-color "white")
 (set-face-background 'region "midnight blue")
-
+(require 'package)
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                          ("marmalade" . "http://marmalade-repo.org/packages/")
                          ("melpa" . "http://melpa.milkbox.net/packages/")))
