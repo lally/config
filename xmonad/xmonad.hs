@@ -358,6 +358,7 @@ myManageHook = composeAll
     , resource  =? "desktop_window" --> doFloat
     , resource  =? "kdesktop"       --> doFloat
     , className =? "InputOutput"    --> doFloat
+    , className =? "knotify4"       --> doShift "config"
     , title     =? "Eclipse"        --> doFloat
     , className =? "Plasma-desktop" --> doFloat -- (doShift "misc2")
     , isDialog                      --> doCenterFloat

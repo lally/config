@@ -11,6 +11,12 @@ import Graphics.X11.Xlib.Extras
 foreign import ccall unsafe "XlibExtras.h XListProperties"
     xListProperties :: Display -> Window -> Ptr CInt -> IO (Ptr Atom)
 
+foreign import ccall unsafe "XlibExtras.h XTextPropertyToStringList"
+    xTextPropertyToStringList :: Ptr TextProperty -> Ptr (Ptr CString) -> Ptr CInt -> IO (Status)
+
+foreign import ccall unsafe "XlibExtras.h XFreeStringList"
+    xFreeStringList :: Ptr CString -> IO ()
+
 -- | Interface to XListProperties
 listProperties :: Display -> Window -> IO [Atom]
 listProperties dpy win = do
@@ -20,16 +26,11 @@ listProperties dpy win = do
                     numC <- peek numP
                     let num = fromIntegral numC
                     arr <- peekArray num rawAtoms
+                    xFree rawAtoms
                     return arr
   atoms <- alloca callX
   -- atomNames <- getAtomNames dpy atoms
   return atoms
-
-foreign import ccall unsafe "XlibExtras.h XTextPropertyToStringList"
-    xTextPropertyToStringList :: Ptr TextProperty -> Ptr (Ptr CString) -> Ptr CInt -> IO (Status)
-
-foreign import ccall unsafe "XlibExtras.h XFreeStringList"
-    xFreeStringList :: Ptr CString -> IO ()
 
 textPropertyToStringList :: TextProperty -> IO [String]
 textPropertyToStringList textProp = do

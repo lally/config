@@ -1,6 +1,7 @@
 module Support.GraphWin (windowMap, showWindows) where
 
 import System.Process
+import Data.List (intercalate)
 import XMonad
 import XMonad.StackSet as W
 import XMonad.Util.NamedWindows (getName)
@@ -17,11 +18,7 @@ decorateName' :: Window -> X String
 decorateName' w = do
   fmap show $ getName w
 
-join :: String -> [String] -> String
-join del [] = ""
-join del (x:xs) = x ++ del ++ (join del xs)
-
 showWindows :: X ()
 showWindows = do
   allWindows <- windowMap
-  io $ putStrLn $ join ", " $ map fst allWindows
+  io $ putStrLn $ intercalate ", " $ map fst allWindows
