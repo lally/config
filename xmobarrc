@@ -1,22 +1,27 @@
-Config { font = "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
+Config { font = "xft:Pragmata Pro-8"  -- "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
        , bgColor = "black"
        , fgColor = "grey"
        , position = Top
        , lowerOnStart = False
-       , commands = [ Run Weather "VOMM" ["-t"," <tempC>C","-L","64","-H","77","--normal","green","--high","red","--low","lightblue"] 36000
-                    , Run MultiCpu ["-t","CPU: <total0>% <total1>%", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 10
+       , commands = [ Run Weather "KEWR" ["-t"," <tempF>F","-L","64","-H","77","--normal","green","--high","red","--low","lightblue"] 600
+                    , Run MultiCpu ["-t","<total0>% <total1>% <total2>% <total3>%", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 10
                     , Run CpuFreq ["-t", "<cpu0> <cpu1>", "-L", "0", "-H", "2", "-l", "lightblue", "-n","white", "-h", "red"] 50
                     -- , Run Com "/home/blackgod/system/getcoretemp.sh" [] "coreTemp" 10
                     -- , Run CoreTemp ["-t", "<core0>C <core1>C", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 50
-                    , Run Memory ["-t","Mem: <usedratio>%"] 10
+                    , Run Memory ["-t","Mem: <usedratio>%", "-L", "10", "-H", "30", "--high", "red"] 10
                     , Run Swap [] 10
-                    , Run Wireless "wlan0" ["-t","wlan0: <quality>%","-L","0","-H","32","--normal","green","--high","red"] 10
-                    , Run Battery ["-t","Batt: <left>%","-L","25","-H","75","--low","#FF0000","--normal","#F9FF00","--high","#00FF00"] 600
+                    , Run Wireless "wlan0" ["-t","wlan0: <quality>%","-L","0","-H","32","--normal","red","--high","green"] 300
+
+                    , Run BatteryP ["BAT0", "BAT1"] ["-t", "<timeleft>", "-S"
+                                        , "-L", "10", "-H", "80"
+                                        , "-l", "red", "-h", "green"
+                                        , "--", "-O", "[Chrg]" ] 100
+
                     -- , Run Com "/home/blackgod/system/getvolume.sh" [] "myVolume" 10
-		    , Run Date "%a %b %_d %I:%M %p" "date" 10
+                    , Run Date "%a %b %_d %I:%M %p" "date" 10           
                     , Run StdinReader
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ %multicpu% %cpufreq% %memory% %swap% %wlan0wi% %battery% Weather: %VOMM% %date%"
+       , template = "%StdinReader% }{ ⋆ CPU: %cpufreq% → %multicpu% | %memory% %swap% | %wlan0wi% | Bat Tm: %battery% | EWR: %KEWR%° | %date%"
        }

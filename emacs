@@ -314,7 +314,6 @@ the form (display key-protocol hex-string)"
 ; (add-hook 'haskell-mode-hook 'font-lock-mode)
 ; (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
 ; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-
 ;(require 'light-symbol)
 ;(set-fringe-style "left-only")
 (add-hook 'c++-mode-hook 'turn-on-fic-mode)
@@ -404,12 +403,23 @@ the form (display key-protocol hex-string)"
   (flyspell-mode 1)
   (auto-fill-mode 1))
 
+(defun local-typescript-mode-hook()
+  (interactive)
+  (tss-setup-current-buffer)
+  (hs-minor-mode 1)
+)
+
+(defun local-js-mode-hook()
+  (interactive)
+  (hs-minor-mode 1)
+)
 
 (add-hook 'c++-mode-hook 'local-cpp-mode-hook)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
 (add-hook 'borg-mode-hook 'local-borg-mode-hook)
 (add-hook 'latex-mode-hook 'local-latex-mode-hook)
-
+(add-hook 'typescript-mode-hook 'local-typescript-mode-hook)
+(add-hook 'js-mode-hook 'local-js-mode-hook)
 ;;============================================================
 ;; * PYTHON SETUP
 ;============================================================
@@ -567,6 +577,8 @@ the form (display key-protocol hex-string)"
  '(tool-bar-mode nil)
  '(transient-mark-mode (quote (only . t)))
  '(typescript-indent-level 2))
+ '(tss-jump-to-definition-key "C->")
+ '(tss-popup-help-key "C-:"))
 
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
@@ -646,10 +658,16 @@ the form (display key-protocol hex-string)"
 ;(require 'org-install)
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.h$" . c++-mode))
 (setq org-clock-persist 'history)
 (org-clock-persistence-insinuate)
+
+;;============================================================
+;; Typescript setup
+;;============================================================
+(require 'tss)
 
 ;;-------------------------
 ;; This should be per-file!
