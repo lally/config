@@ -1,27 +1,36 @@
-Config { font = "xft:Pragmata Pro-8"  -- "-*-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
+Config { font = "xft:Pragmata Pro-8"  -- Make sure to build with cabal install xmobar --flags="all_extensions" 
        , bgColor = "black"
        , fgColor = "grey"
        , position = Top
        , lowerOnStart = False
-       , commands = [ Run Weather "KEWR" ["-t"," <tempF>F","-L","64","-H","77","--normal","green","--high","red","--low","lightblue"] 600
-                    , Run MultiCpu ["-t","<total0>% <total1>% <total2>% <total3>%", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 10
+                      -- Take out weather to avoid it blocking when there's no network.
+       , commands = [ -- Run Weather "KEWR" ["-t"," <tempF>F","-L","64","-H","77","--normal","green","--high","red","--low","lightblue"] 600 ,
+                     Run MultiCpu ["-t","<autovbar>", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 10
+--                    , Run MultiCpu ["-t","<total0>% <total1>% <total2>% <total3>%", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 10                      
                     , Run CpuFreq ["-t", "<cpu0> <cpu1>", "-L", "0", "-H", "2", "-l", "lightblue", "-n","white", "-h", "red"] 50
                     -- , Run Com "/home/blackgod/system/getcoretemp.sh" [] "coreTemp" 10
                     -- , Run CoreTemp ["-t", "<core0>C <core1>C", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "white", "-h", "red"] 50
-                    , Run Memory ["-t","Mem: <usedratio>%", "-L", "10", "-H", "30", "--high", "red"] 10
+                    , Run Memory ["-t","Mem: <usedratio>%", "-L", "10", "-H", "70", "--high", "red"] 10
                     , Run Swap [] 10
-                    , Run Wireless "wlan0" ["-t","wlan0: <quality>%","-L","0","-H","32","--normal","red","--high","green"] 300
-
-                    , Run BatteryP ["BAT0", "BAT1"] ["-t", "<timeleft>", "-S"
-                                        , "-L", "10", "-H", "80"
-                                        , "-l", "red", "-h", "green"
-                                        , "--", "-O", "[Chrg]" ] 100
-
+--                    , Run Wireless "wlan0" ["-t","wlan0: <quality>%","-L","0","-H","32","--normal","red","--high","green"] 300
+                    , Run Com "/home/lally/config/bin/netstatus.sh" [] "conn" 10
+                    , Run BatteryN ["BAT0"] ["-t", "<acstatus> <left> <leftvbar>", "-S"
+                                            , "-L", "10", "-H", "80" 
+                                            , "-l", "red", "-h", "green"
+                                            , "--", "-O", "<fc=green>[Chrg]</fc>" ] 100 "bat1"
+                    , Run BatteryN ["BAT1"] ["-t", "<left> <leftvbar>", "-S"
+                                            , "-L", "10", "-H", "80"
+                                            , "-l", "red", "-h", "green"
+                                            , "--", "-O", "<fc=green>[Chrg]</fc>" ] 100 "bat2"
+                    , Run Brightness ["-t", "<vbar>"] 60
                     -- , Run Com "/home/blackgod/system/getvolume.sh" [] "myVolume" 10
-                    , Run Date "%a %b %_d %I:%M %p" "date" 10           
+                    , Run Date "%a %b %_d %I:%M %p" "date" 10
                     , Run StdinReader
+                    , Run TopProc ["-t", "<fc=green><name1></fc>"] 100
+                    , Run TopMem ["-t", "<fc=red><both1></fc>"] 100
+                    , Run Volume "default" "Master" [] 10
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "_%StdinReader% }{ ⋆ CPU: %cpufreq% → %multicpu% | %memory% %swap% | %wlan0wi% | Bat Tm: %battery% | EWR: %KEWR%° | %date%"
+       , template = "_%StdinReader% }{ ⋆ CPU: %cpufreq% [%multicpu%] (%top%) | %memory% %swap% (%topmem%) | %conn% | Dpy: %bright% / %default:Master% | Bat: %bat1%, %bat2% | %date%"
        }

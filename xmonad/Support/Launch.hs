@@ -96,11 +96,12 @@ getWinInfo dpy win = do
   -- MEMORY: Note: #3 in profiler for memory comes from textPropertyToStringList.
   let propsForWindow :: Atom -> X [String]
       propsForWindow atom = do
-        cache <- get
+	return []
+{-        cache <- get
         textProp <- liftIO $ XE.getTextProperty dpy win atom
         atomName <- lookupAtom dpy atom
         result <- liftIO $ textPropertyToStringList textProp
-        return result
+        return result -}
 
   winPropertyAtoms <- io $ listProperties dpy win
   winPropertyNames <- mapM (lookupAtom dpy) winPropertyAtoms

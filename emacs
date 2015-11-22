@@ -107,12 +107,15 @@ the form (display key-protocol hex-string)"
 ;; Stuff in config/libs/*
 (add-to-list 'load-path "~/config/libs/site-lisp")
 (add-to-list 'load-path "~/config/libs/site-lisp/emacs-ctable")
+(add-to-list 'load-path "~/config/libs/site-lisp/g-client")
 ;; (if (file-exists-p "~/config/libs/site-lisp/haskell-mode")
 ;;     (add-to-list 'load-path "~/config/libs/site-lisp/haskell-mode")
 
 ;;  (autoload 'haskell-font-lock-choose-keywords "haskell-font-lock")
 
 ;; )
+
+(require 'auto-install)
 
 ;; Package-Manager stuff, Emacs 24+ only
 (if (>= emacs-major-version 24)
@@ -132,21 +135,16 @@ the form (display key-protocol hex-string)"
       ))
 
 ;; IDO, for my enhanced buffer management.
-(require 'ido)
-(ido-mode t)
+;(require 'ido)
+;(ido-mode t)
 ; (global-ede-mode 1)                      ; Enable the Project management system
 
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black" 
-                         :foreground "white" :inverse-video nil 
-                         :box nil :strike-through nil :overline nil 
-                         :underline nil :slant normal :weight normal 
-                         :height 90 :width condensed :foundry "unknown" 
-                         :family "PragmataPro"))))
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 90 :width condensed :foundry "unknown" :family "PragmataPro"))))
  '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
 
 
@@ -200,8 +198,44 @@ the form (display key-protocol hex-string)"
 
 ;(load "~/local/haskell-mode-2.4/haskell-site-file")
 ;(load "~/local/share/emacs/site-lisp/twit.el")
+(load "~/config/libs/site-lisp/emacs-rc-pretty-lambda.el")
 (require 'inf-haskell)
 (require 'mmm-mode)
+
+(defun haskell-insert-lambda ()
+  (interactive)
+  (insert-char ?λ)
+)
+
+;; Ugh, needs emacs 24.4.
+;; Copied from http://www.emacswiki.org/emacs/PrettySymbolsForLanguages
+(defun haskell-unicode ()
+  (interactive)
+  (substitute-patterns-with-unicode
+   (list
+    (cons "\\s \\(<-\\)\\s " 'left-arrow)
+    (cons "\\s \\(->\\)\\s " 'right-arrow)
+    (cons "\\s \\(==\\)\\s " 'identical)
+    (cons "\\s \\(/=\\)\\s " 'not-identical)
+    (cons "\\s \\(()\\)\\(\\s \\|$\\)" 'nil)
+    (cons "\\<\\(sqrt\\)\\>" 'square-root)
+    (cons "\\s \\(&&\\)\\s " 'logical-and)
+    (cons "\\s \\(||\\)\\s " 'logical-or)
+    (cons "\\<\\(not\\)\\>" 'logical-neg)
+    (cons "\\s \\(>\\)\\[^=\\]" 'greater-than)
+    (cons "\\s \\(<\\)\\[^=\\]" 'less-than)
+    (cons "\\s \\(>=\\)\\s " 'greater-than-or-equal-to)
+    (cons "\\s \\(<=\\)\\s " 'less-than-or-equal-to)
+    (cons "\\<\\(alpha\\)\\>" 'alpha)
+    (cons "\\<\\(beta\\)\\>" 'beta)
+    (cons "\\<\\(gamma\\)\\>" 'gamma)
+    (cons "\\<\\(delta\\)\\>" 'delta)
+    (cons "\\s \\(''\\)\\s " 'double-prime)
+    (cons "\\s \\('\\)\\s " 'prime)
+    (cons "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\).*?\\s *->" 'lambda)
+    (cons "\\s \\(!!\\)\\s " 'double-exclamation)
+    (cons "\\s \\(\\.\\.\\)\\s " 'horizontal-ellipsis))))
+
 
 ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
@@ -209,7 +243,10 @@ the form (display key-protocol hex-string)"
 ;; (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
 (add-hook 'haskell-mode-hook 'my-mmm-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-
+(add-hook 'haskell-mode-hook 'haskell-unicode)
+(add-hook 'haskell-mode-hook 
+          (lambda ()
+            (local-set-key (kbd "M-\\") 'haskell-insert-lambda)))
 ; literate haskell (.lhs) support.
 (mmm-add-classes
  '((literate-haskell-bird
@@ -451,16 +488,17 @@ the form (display key-protocol hex-string)"
 (transient-mark-mode t)
 
 ;(setq p4-use-p4config-exclusively t)
-(ido-mode t)
+; (ido-mode t)
 (set-fringe-mode '(1 . 1))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(color-theme-selection "Black" nil (color-theme))
+;  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
  '(display-time-mode t)
+ '(erc-modules (quote (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands readonly replace ring stamp track)))
  '(gdb-find-source-frame t)
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
@@ -469,15 +507,22 @@ the form (display key-protocol hex-string)"
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
  '(inhibit-startup-screen t)
- '(org-agenda-files (quote ("~/org/toplevel/habits.org" "~/org/toplevel/incoming.org" "~/org/toplevel/learning.org" "~/org/toplevel/monitoring.org" "~/org/toplevel/optimization.org" "~/org/toplevel/pending.org" "~/org/toplevel/research.org" "~/org/toplevel/unsorted.org" "~/org/project/onegig.org" "~/org/project/scoreboard.org" "~/org/project/thwack.org" "~/org/project/twenty.org")))
+ '(org-agenda-files (quote ("~/org/project/uproxy/code.org" "~/Work/org-issue-sync/test.org")))
+ '(org-capture-templates (quote (("t" "Todo" entry (file+headline "~/org/unsorted.org" "Tasks") "* TODO %?
+  %i
+  %a") ("i" "Idea" entry (file+headline "~/org/unsorted.org" "Ideas") "* %T Idea") ("p" "Planning Journal Entry" entry (file "~/org/plan-scratchpad.org") "* %T Plan") ("m" "Meta (Productivity) Entry" entry (file "~/org/productivity.org") "* %T Meta") ("l" "Link" entry (file+olp "~/org/intel/unsorted.org" "Web Links") "* %a
+ %?
+ %i"))) t)
  '(org-enforce-todo-dependencies t)
  '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link org-learn org-panel)))
- '(safe-local-variable-values (quote ((org-use-property-inheritance . t))))
+ '(org-refile-targets (quote ((org-agenda-files :maxlevel . 3))))
+ '(safe-local-variable-values (quote ((haskell-process-use-ghci . t) (haskell-indent-spaces . 4) (org-use-property-inheritance . t))))
  '(show-paren-mode t)
- '(tool-bar-mode nil)
  '(show-trailing-whitespace t)
+ '(tool-bar-mode nil)
  '(tss-jump-to-definition-key "C->")
- '(tss-popup-help-key "C-:"))
+ '(tss-popup-help-key "C-:")
+ '(typescript-indent-level 2))
 
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
@@ -485,8 +530,8 @@ the form (display key-protocol hex-string)"
 ;  (set-default-font
 ;   "-unknown-Pragmata Pro-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
   (set-face-attribute 'default nil :height 93)
-  (set-background-color "black")
-  (set-foreground-color "white")
+;  (set-background-color "black")
+;   (set-foreground-color "white")
   (set-cursor-color "white")
   (set-face-background 'region "midnight blue")
   (show-paren-mode 1)
@@ -503,12 +548,12 @@ the form (display key-protocol hex-string)"
 (set-fill-column 79)
 (column-marker-1 81)
 (global-font-lock-mode 1)
-(set-background-color "black")
-(set-foreground-color "white")
+;(set-background-color "black")
+; (set-foreground-color "white")
 (set-cursor-color "white")
-(set-face-background 'region "midnight blue")
+;(set-face-background 'region "midnight blue")
 (show-paren-mode 1)
-(set-face-background 'hl-line "#330")
+; (set-face-background 'hl-line "#330")
 (global-hl-line-mode 1)
 
 ;(require 'icicles)
@@ -538,10 +583,10 @@ the form (display key-protocol hex-string)"
     '(:array :signature "{sv}")
     ':int32 timeout))
 
-(defun pw/compile-notify (buffer message)
-  (send-desktop-notification "emacs compile" message 30000))
+(defun pw/compile-notify (buffer message) ())
+;  (send-desktop-notification "emacs compile" message 30000))
 
-(setq compilation-finish-function 'pw/compile-notify)
+; (setq compilation-finish-function 'pw/compile-notify)
 
 ;;============================================================
 ;; GIT SETUP
@@ -655,6 +700,64 @@ the form (display key-protocol hex-string)"
   (last (split-string n "/" 't)))
 
 ;;============================================================
+;; helm mode
+;;============================================================
+(require 'helm)
+(require 'helm-config)
+
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+(when (executable-find "curl")
+  (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t)
+
+(helm-mode 1)
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-x b") 'helm-mini)
+(setq helm-buffers-fuzzy-matching t
+      helm-recentf-fuzzy-match    t)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+
+;; Enable helm-gtags-mode
+(add-hook 'c-mode-hook 'helm-gtags-mode)
+(add-hook 'c++-mode-hook 'helm-gtags-mode)
+(add-hook 'java-mode-hook 'helm-gtags-mode)
+(add-hook 'asm-mode-hook 'helm-gtags-mode)
+
+;; Set key bindings
+(require 'helm-gtags)
+(define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-find-tag)
+(define-key helm-gtags-mode-map (kbd "M-R") 'helm-gtags-find-rtag)
+(define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
+(define-key helm-gtags-mode-map (kbd "M-g M-p") 'helm-gtags-parse-file)
+(define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
+(define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
+(define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
+
+(setq helm-dash-common-docsets '("Android")) ;'("C" "C++" "Qt"))
+
+;(prelude-require-packages '(w3m))
+(require 'w3m)
+(setq w3m-home-page "http://emacs-w3m.namazu.org/info/")
+(setq browse-url-browser-function 'w3m-browse-url)
+
+(projectile-global-mode)
+
+
+;;============================================================
 ;; EXPERIMENTAL
 ;;============================================================
 ;;(load-file "/home/build/eng/elisp/gfs.el")
@@ -664,14 +767,21 @@ the form (display key-protocol hex-string)"
 ;;  to other preferences above.
 
 
-(set-background-color "black")
-(set-foreground-color "white")
-(set-cursor-color "white")
-(set-face-background 'region "midnight blue")
+;(set-background-color "black")
+;(set-foreground-color "white")
+;(set-cursor-color "white")
+;(set-face-background 'region "midnight blue")
+
+(load-theme 'ample-zen t)
+; (add-to-list 'helm-dash-common-docsets "Android")
 
 ;; MAGIT, for GIT support.
 (require 'magit)
 (require 'git-gutter)
+
+;; Chrome support
+(require 'edit-server)
+(edit-server-start)
 ;;============================================================
 ;; KEYBINDINGS
 ;;============================================================
@@ -694,6 +804,8 @@ the form (display key-protocol hex-string)"
 
 (global-set-key [f12] 'compile)
 (global-set-key [S-f12] 'recompile)
+
+(global-set-key (kbd "C-+") 'column-highlight-mode)
 
 ;(global-set-key (kbd "RET") 'newline-and-indent)
 (global-set-key (kbd "C-c C-h") 'hs-toggle-hiding)

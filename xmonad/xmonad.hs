@@ -361,6 +361,7 @@ myManageHook = composeAll
     , className =? "knotify4"       --> doShift "config"
     , title     =? "Eclipse"        --> doFloat
     , className =? "Plasma-desktop" --> doFloat -- (doShift "misc2")
+    , className =? "knotify4"       --> doIgnore
     , isDialog                      --> doCenterFloat
     , title     =? "FLOAT"          --> doCenterFloat
     , isFullscreen --> doFullFloat ]
@@ -414,30 +415,31 @@ main = do if not Graphics.X11.Xinerama.compiledWithXinerama
                      ipcThread <- forkIO $ runIPCServer wrEnd outTVar inTVar
                      -- modified xmonad will use the same triplet for IPC
                      xmonad readEnd inTVar outTVar kde4Config -}
-                     launchXMonad kde4Config {
-	              -- simple stuff
-	                terminal           = myTerminal,
-	                focusFollowsMouse  = myFocusFollowsMouse,
-	                borderWidth        = myBorderWidth,
-	                modMask            = myModMask,
-	                workspaces         = myWorkspaces,
-	                normalBorderColor  = myNormalBorderColor,
-	                focusedBorderColor = myFocusedBorderColor,
+                     -- launchXMonad kde4Config {
+                     launchXMonad $ ewmh desktopConfig {
+                      -- simple stuff
+                        terminal           = myTerminal,
+                        focusFollowsMouse  = myFocusFollowsMouse,
+                        borderWidth        = myBorderWidth,
+                        modMask            = myModMask,
+                        workspaces         = myWorkspaces,
+                        normalBorderColor  = myNormalBorderColor,
+                        focusedBorderColor = myFocusedBorderColor,
 
-	              -- key bindings
-	                keys               = myKeys,
-	                mouseBindings      = myMouseBindings,
+                      -- key bindings
+                        keys               = myKeys,
+                        mouseBindings      = myMouseBindings,
 
-	              -- hooks, layouts
-	                layoutHook         = desktopLayoutModifiers (myLayout), 
-			logHook = dynamicLogWithPP $ xmobarPP
+                      -- hooks, layouts
+                        layoutHook         = desktopLayoutModifiers (myLayout), 
+                        logHook = dynamicLogWithPP $ xmobarPP
                                   { ppOutput = hPutStrLn xmproc
-			          , ppTitle = xmobarColor "grey" "" . shorten 50
+                                  , ppTitle = xmobarColor "grey" "" . shorten 50
                                   , ppExtras = [xmobarColorL "green" "" logCurrent]
                                   , ppOrder = \(workspaces:_:title:current:_) ->
                                               [current, title] },
-	                manageHook         = myManageHook,
-	                handleEventHook    = myEventHook,
-	                startupHook        = myStartupHook
-	             }  
+                        manageHook         = myManageHook,
+                        handleEventHook    = myEventHook,
+                        startupHook        = myStartupHook
+                     }  
 
