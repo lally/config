@@ -147,10 +147,15 @@ function fgrep () {
 
 RPROMPT="\$(cabal_sandbox_info) $RPROMPT"
 
-alias nix=. /home/lally/.nix-profile/etc/profile.d/nix.sh
+alias nix='. /home/lally/.nix-profile/etc/profile.d/nix.sh'
 
-# The next line updates PATH for the Google Cloud SDK.
-source '/home/lally/Work/google-cloud-sdk/path.zsh.inc'
+if [ -f /home/lally/Work/google-cloud-sdk/path.zsh.inc ]; then
+  # The next line updates PATH for the Google Cloud SDK.
+  source '/home/lally/Work/google-cloud-sdk/path.zsh.inc'
+fi
 
+if [ -f /home/lally/Work/google-cloud-sdk/completion.zsh.inc ]; then
 # The next line enables shell command completion for gcloud.
 source '/home/lally/Work/google-cloud-sdk/completion.zsh.inc'
+fi
+
