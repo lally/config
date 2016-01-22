@@ -130,9 +130,14 @@ the form (display key-protocol hex-string)"
       ;; Any add to list for package-archives (to add marmalade or melpa) goes here
       (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
       (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-      (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+      (add-to-list 'package-archives '("melpa" . "https://stable.melpa.org/packages/"))
       (package-initialize)
       ))
+; (print package-archives)
+(require 'smart-mode-line)
+(setq sml/no-confirm-load-theme t)
+(sml/setup)
+(setq sml/theme 'respectful)
 
 ;; IDO, for my enhanced buffer management.
 ;(require 'ido)
@@ -145,7 +150,7 @@ the form (display key-protocol hex-string)"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 90 :width condensed :foundry "unknown" :family "PragmataPro"))))
- '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
+ '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold))) t))
 
 
 ;; ALIASES
@@ -495,14 +500,16 @@ the form (display key-protocol hex-string)"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-;  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
+ '(custom-safe-themes (quote ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "26614652a4b3515b4bbbb9828d71e206cc249b67c9142c06239ed3418eff95e2" default)))
  '(display-time-mode t)
+ '(ecb-options-version "2.40")
  '(erc-modules (quote (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands readonly replace ring stamp track)))
  '(gdb-find-source-frame t)
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
  '(gdb-speedbar-auto-raise t)
+ '(github-notifier-token "2e7051dd00e8872796266831e9ccafd20137308f")
  '(haskell-program-name "cabal repl")
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
@@ -514,7 +521,7 @@ the form (display key-protocol hex-string)"
  %?
  %i"))) t)
  '(org-enforce-todo-dependencies t)
- '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link org-learn org-panel)))
+ '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 3))))
  '(safe-local-variable-values (quote ((haskell-process-use-ghci . t) (haskell-indent-spaces . 4) (org-use-property-inheritance . t))))
  '(show-paren-mode t)
@@ -524,6 +531,7 @@ the form (display key-protocol hex-string)"
  '(tss-popup-help-key "C-:")
  '(typescript-indent-level 2))
 
+(smart-mode-line-enable t)
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
   (set-fill-column 79)
@@ -823,3 +831,7 @@ the form (display key-protocol hex-string)"
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
 (global-set-key "\C-ct" 'org-time-stamp)
+
+;; Local Variables:
+;; mode: lisp
+;; End:

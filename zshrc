@@ -30,7 +30,8 @@ export REPORTTIME=10
 
 # Uncomment following line if you want red dots to be displayed while waiting for completion
 export COMPLETION_WAITING_DOTS="true"
-export LESSOPEN="| /usr/share/source-highlight/src-hilite-lesspipe.sh %s"
+export LESSOPEN="|~/.lessfilter %s"
+#export LESSOPEN="| /usr/share/source-highlight/src-hilite-lesspipe.sh %s"
 export LS_COLORS="*~=90:*_test.cc=4:*_unittest.cc=4:*.org=44;37:*BUILD=01;38;5;163:${LS_COLORS}"
 export LESS=' -R '
 export P4CONFIG=.p4config
@@ -42,9 +43,11 @@ export GREP_OPTIONS='--color=auto'
 export PROJECTNAME=
 export PROJECTDIR=~
 export PROJECTGOOG=~
-export PATH=/ulg/bin:~/.cabal/bin:/ulg/home/lally/chromes/depot_tools:$PATH:~/config/git
-export MANPATH=/usr/local/texlive/2011/texmf/doc/man:$MANPATH
-export INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH
+export PATH=/ulg/bin:~/.cabal/bin:$PATH:~/config/git:~/Work/depot_tools
+export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
+
+#export MANPATH=/usr/local/texlive/2011/texmf/doc/man:$MANPATH
+#export INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH
 #export JAVA_HOME=/usr/local/buildtools/java/jdk
 
 # alias less='source-highlight --failsafe --infer-lang -f esc | less'
@@ -53,12 +56,12 @@ export INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH
 # Example format: plugins=(rails git textmate ruby lighthouse)
 plugins=(git svn zsh-syntax-highlighting tmux git-extras gpg-agent)
 
-#fpath=(/google/src/files/head/depot/google3/devtools/blaze/scripts/zsh_completion $fpath)
+fpath=(/google/src/files/head/depot/google3/devtools/blaze/scripts/zsh_completion $fpath)
 #cache-path must exist
 #
 source $ZSH/oh-my-zsh.sh
 
-# Presumably a fix for slow git prompts.  Nice in non-git directories, but everywhere else, yeesh.
+# Presumably a fix for slow git prompts.  Nice in non-git directoris, but everywhere else, yeesh.
 #function git_prompt_info() {
 #  ref=$(git symbolic-ref HEAD 2> /dev/null) || return
 #  echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$ZSH_THEME_GIT_PROMPT_SUFFIX)"
@@ -81,21 +84,12 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 alias fu=fileutil
-alias bn=~/bin/branch_date.sh
-alias vim='emacsclient -t'
-alias ec='emacsclient -n'
-alias ect='emacsclient -t'
-# Custom-built binaries.  The aliases avoid putting /ulg/bin into PATH.
-alias emacs='/ulg/bin/emacs'
+alias vim='emacsclient -s org -t'
+alias ec='emacsclient -s org -n'
+alias ect='emacsclient -s org -t'
 # Google-specific
 alias open='xdg-open'
-alias prodvm=/google/data/rw/projects/prod71vm/prod71vm
-alias gerrit='ssh prodkernel gerrit'
 alias ack='ack-grep'
-#alias log_sucker='/google/data/ro/projects/production/tools/log_sucker.par'
-##alias runsll='/home/build/static/projects/mustang/run_borg_leaf_loadtest.par'
-#alias runsll='/home/build/static/projects/mustang/run_loadtest.par'
-#alias kborg='borg --borg=ig-kerneltest --borguser=kernel-librarian-sll'
 
 # Git-specific
 alias g5='/google/data/ro/projects/shelltoys/g5.sar'
@@ -103,8 +97,8 @@ alias gba='git branch -av'
 
 # TMUX specific aliases
 alias tls='tmux ls'
-alias ta='tmux attach -t'
-alias tn='tmux new -s'
+alias ta='tmx attach -t'
+alias tn='tmx new -s'
 
 zstyle ':completion:*' hosts off
 zstyle ':completion:*' accept-exact '*(N)'
@@ -113,16 +107,11 @@ zstyle ':completion:*' cache-path /var/cache/zsh
 
 alias basis="git5 status | cut -d ' ' -f 4"
 
-function perflab() {
-  ~/bin/perlab.sh "$@"
-}
-
 __git_files () {
       _wanted files expl 'local files' _files
 }
 
 # Move the history off of NFS, as I think it confuses ZSH a bit.
-export HISTFILE=/usr/local/google/.zsh_history
 setopt APPEND_HISTORY
 unsetopt CORRECT_ALL
 unsetopt INC_APPEND_HISTORY
@@ -130,6 +119,38 @@ zstyle '*' users lally
 unsetopt autocd
 setopt no_share_history
 setopt no_multios
-
 cdpath=
 
+# Haskell/Cabal section
+alias ghc-sandbox="ghc -no-user-package-db -package-db .cabal-sandbox/*-packages.conf.d"
+alias ghci-sandbox="ghci -no-user-package-db -package-db .cabal-sandbox/*-packages.conf.d"
+alias runhaskell-sandbox="runhaskell -no-user-package-db -package-db .cabal-sandbox/*-packages.conf.d"
+
+function local_date() {
+  date +"%x %X"
+}
+
+function cabal_sandbox_info() {
+    cabal_files=(*.cabal(N))
+    if [ $#cabal_files -gt 0 ]; then
+        if [ -f cabal.sandbox.config ]; then
+            echo "%{$fg[green]%}sandboxed%{$reset_color%}"
+        else
+            echo "%{$fg[red]%}not sandboxed%{$reset_color%}"
+        fi
+    fi
+}
+ 
+function fgrep () {
+   find . -type f -name "$1" -exec grep "$2" {} \; -print
+}
+
+RPROMPT="\$(cabal_sandbox_info) $RPROMPT"
+
+alias nix=. /home/lally/.nix-profile/etc/profile.d/nix.sh
+
+# The next line updates PATH for the Google Cloud SDK.
+source '/home/lally/Work/google-cloud-sdk/path.zsh.inc'
+
+# The next line enables shell command completion for gcloud.
+source '/home/lally/Work/google-cloud-sdk/completion.zsh.inc'
