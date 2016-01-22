@@ -141,7 +141,7 @@ the form (display key-protocol hex-string)"
 (require 'org-habit)
 (require 'org-protocol)
 (require 'haskell-mode)
-(require 'git-gutter-fringe+)
+;(require 'git-gutter-fringe+)
 
 
 (custom-set-faces
@@ -188,21 +188,25 @@ the form (display key-protocol hex-string)"
 ;; * BBDB Setup
 ;;============================================================
 ;;; bbdb
-(require 'bbdb)
-(require 'bbdb-autoloads)
-(bbdb-initialize 'gnus 'message)
-(bbdb-insinuate-message)
-(add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
-
-(setq
- bbdb-file "~/org/bbdb"
- bbdb-offer-save 'auto
- bbdb-notice-auto-save-file t
- bbdb-expand-mail-aliases t
- bbdb-canonicalize-redundant-nets-p t
- bbdb-always-add-addresses t
- bbdb-complete-name-allow-cycling t
- )
+(condition-case nil
+   (progn
+      (require 'bbdb)
+      (require 'bbdb-autoloads)
+      (bbdb-initialize 'gnus 'message)
+      (bbdb-insinuate-message)
+      (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
+      
+      (setq
+       bbdb-file "~/org/bbdb"
+       bbdb-offer-save 'auto
+       bbdb-notice-auto-save-file t
+       bbdb-expand-mail-aliases t
+       bbdb-canonicalize-redundant-nets-p t
+       bbdb-always-add-addresses t
+       bbdb-complete-name-allow-cycling t
+       )
+      )
+   (file-error (message "bbdb not available; not configuring") ))
 
 
 ;;============================================================
@@ -877,14 +881,17 @@ the form (display key-protocol hex-string)"
 (sml/setup)
 
 ;; ** sr-speedbar
-(require 'sr-speedbar)
-(setq speedbar-use-images nil)
-(make-face 'speedbar-face)
-(set-face-font 'speedbar-face "PragmataPro-7")
-(setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
+(condition-case nil
+   (progn
+     (require 'sr-speedbar)
+     (setq speedbar-use-images nil)
+     (make-face 'speedbar-face)
+     (set-face-font 'speedbar-face "PragmataPro-7")
+     (setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
+     )
+  (file-error (message "sr-speedbar not available")))
 
 (require 'w3m)
-(setq w3m-home-page "http://emacs-w3m.namazu.org/info/")
 (setq browse-url-browser-function 'w3m-browse-url)
 
 (projectile-global-mode)
@@ -913,8 +920,13 @@ the form (display key-protocol hex-string)"
 (require 'edit-server)
 (edit-server-start)
 ;; ** cscope
-(require 'xcscope)
-(cscope-setup)
+(condition-case nil
+    (progn
+      (require 'xcscope)
+      (cscope-setup)
+      )
+  (file-error (message "xcscope not available.")))
+
 ;;============================================================
 ;; * KEYBINDINGS
 ;;============================================================
