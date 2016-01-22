@@ -117,6 +117,7 @@ the form (display key-protocol hex-string)"
       ;; Any add to list for package-archives (to add marmalade or melpa) goes here
       (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
       (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+      (add-to-list 'package-archives '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/"))
       (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
       (package-initialize)
       (edit-server-start)
@@ -134,9 +135,7 @@ the form (display key-protocol hex-string)"
 (require 'org-habit)
 (require 'org-protocol)
 (require 'haskell-mode)
-(require 'elisp-format)  ; in config/libs/site-lisp.
 (require 'git-gutter-fringe+)
-
 
 ;; IDO, for my enhanced buffer management.
 (require 'ido)
@@ -151,7 +150,8 @@ the form (display key-protocol hex-string)"
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 68 :width normal :foundry "unknown" :family "PragmataPro"))))
  '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold))) t)
- '(mode-line ((t (:background "#212931" :foreground "#eeeeec" :box (:line-width -1 :style released-button) :height 1.0 :family "PragmataPro")))))
+ '(mode-line ((t (:background "#212931" :foreground "#eeeeec" :box (:line-width -1 :style released-button) :height 1.0 :family "PragmataPro"))))
+ '(sml/filename ((t (:inherit mode-line-buffer-id)))))
 
 
 ;; ALIASES
@@ -246,39 +246,18 @@ the form (display key-protocol hex-string)"
 
 
 ;;============================================================
-;; * SEMANTICDB SETUP
-;;============================================================
-(global-ede-mode 1)                      ; Enable the Project management system
-;(semantic-load-enable-gaudy-code-helpers)      ; Enable prototype help and
-;                                               ; smart completion
-(setq semantic-stickyfunc-mode 1)
-(setq semantic-decoration-mode 1)
-(setq semantic-idle-completion-mode nil)
-;(global-srecode-minor-mode 1)            ; Enable template insertion menu
-
-;(add-hook 'python-mode-hook 'turn-on-fic-mode)
-
-(require 'semantic/ia)
-; (require 'semantic/gcc)
-(require 'semantic/db)
-(global-semanticdb-minor-mode 1)
-(semanticdb-enable-gnu-global-databases 'c-mode)
-(semanticdb-enable-gnu-global-databases 'c++-mode)
-;; Remove semanticdb-save-all-db-idle from the auto-save-hook.  It looks
-;; to be my stalling problem.  I blame NFS.
-(remove-hook 'auto-save-hook 'semanticdb-save-all-db-idle)
-(set-variable 'semantic-idle-scheduler-max-buffer-size 4096) ; 4k max buffer to reparse
-
-
-;;============================================================
 ;; * Haskell mode
 ;;============================================================
 
 ;(load "~/local/haskell-mode-2.4/haskell-site-file")
 ;(load "~/local/share/emacs/site-lisp/twit.el")
+(autoload 'ghc-init "ghc" nil t)
+(autoload 'ghc-debug "ghc" nil t)
+;(add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 (require 'mmm-mode)
 (require 'inf-haskell)
 (defun my-haskell-mode ()
+  (ghc-init)
   (turn-on-haskell-doc-mode)
   (turn-on-haskell-simple-indent)
   (turn-on-font-lock)
@@ -314,6 +293,7 @@ the form (display key-protocol hex-string)"
 ; (add-hook 'haskell-mode-hook 'font-lock-mode)
 ; (add-hook 'haskell-mode-hook 'imenu-add-menubar-index)
 ; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+
 ;(require 'light-symbol)
 ;(set-fringe-style "left-only")
 (add-hook 'c++-mode-hook 'turn-on-fic-mode)
@@ -342,13 +322,6 @@ the form (display key-protocol hex-string)"
             (setq answer (+ (expt 10 field-width) answer)))
           (replace-match (format (concat "%0" (int-to-string field-width) "d")
                                  answer)))))))
-
-;; https://github.com/benma/emacs.d/blob/a22f73ee26473bf94775f04c3f969523f6bbb145/init.el#L333
-;; (defun whack-whitespace ()
-;;   "Delete all white space from point to the next word."
-;;   (interactive nil)
-;;   (when (re-search-forward "[ \t\n]+" nil t)
-;;     (replace-match "" nil nil)))
 
 (defun reverse-other-window ()
   (interactive)
@@ -403,23 +376,12 @@ the form (display key-protocol hex-string)"
   (flyspell-mode 1)
   (auto-fill-mode 1))
 
-(defun local-typescript-mode-hook()
-  (interactive)
-  (tss-setup-current-buffer)
-  (hs-minor-mode 1)
-)
-
-(defun local-js-mode-hook()
-  (interactive)
-  (hs-minor-mode 1)
-)
 
 (add-hook 'c++-mode-hook 'local-cpp-mode-hook)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
 (add-hook 'borg-mode-hook 'local-borg-mode-hook)
 (add-hook 'latex-mode-hook 'local-latex-mode-hook)
-(add-hook 'typescript-mode-hook 'local-typescript-mode-hook)
-(add-hook 'js-mode-hook 'local-js-mode-hook)
+
 ;;============================================================
 ;; * PYTHON SETUP
 ;============================================================
@@ -457,22 +419,8 @@ the form (display key-protocol hex-string)"
 
 
 
-;;
-;; TODO(lally): Run through ~/gitwork and invoke this for all members.
-;; I can use DESCRIPTION for :name.
-;;
-;(ede-cpp-root-project "qsi-cache-threadscape"
-;                      :name "Cache and Threadscape Stats"
-;                      :file "~/gitwork/qsi-cache-threadscape/google3/mustang/BUILD"
-;)
-;; See http://alexott.net/en/writings/emacs-devenv/EmacsCedet.html for details
-;; on what's in here.
-
-
-;(setq-mode-local c-mode semanticdb-find-default-throttle
-;                 '(project unloaded system recursive))
-
-
+;; There has to be a separate 'global prefs' section, and each
+;; language module can change it from there.
 
 (setq-default show-trailing-whitespace t)
 (setq-default indent-tabs-mode nil)
@@ -535,16 +483,17 @@ the form (display key-protocol hex-string)"
 ;;============================================================
 ;; * GENERAL WINDOW SETUP
 ;;============================================================
-
-;
 ;; ** Normal configuration stuff
 (scroll-bar-mode -1)
 (tool-bar-mode 'nil)
 (transient-mark-mode t)
 
 ;(setq p4-use-p4config-exclusively t)
-(ido-mode t)
-(set-fringe-mode '(12 . 8))
+;(ido-mode t)
+; '(ido-default-buffer-method (quote selected-window))
+; '(ido-default-file-method (quote selected-window))
+; '(ede-project-directories (quote ("/usr/local/google/home/lally")))
+(set-fringe-mode '(12 . 0))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -552,7 +501,7 @@ the form (display key-protocol hex-string)"
  ;; If there is more than one, they won't work right.
  '(color-theme-selection "Black" nil (color-theme))
  '(column-number-mode t)
- '(custom-safe-themes (quote ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "cdfb22711f64d0e665f40b2607879fcf2607764b2b70d672ddaa26d2da13049f" "f21caace402180ab3dc5157d2bb843c4daafbe64aadc362c9f4558ac17ce43a2" "aed73c6d0afcf2232bb25ed2d872c7a1c4f1bda6759f84afc24de6a1aec93da8" default)))
+ '(custom-safe-themes (quote ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "91fba9a99f7b64390e1f56319c3dbbaed22de1b9676b3c73d935bf62277b799c" "db9feb330fd7cb170b01b8c3c6ecdc5179fc321f1a4824da6c53609b033b2810" "09669536b4a71f409e7e2fd56609cd7f0dff2850d4cbfb43916cc1843c463b80" "75c0b9f9f90d95ac03f8647c75a91ec68437c12ff598e2abb22418cd4b255af0" "e033c4abd259afac2475abd9545f2099a567eb0e5ec4d1ed13567a77c1919f8f" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "cdfb22711f64d0e665f40b2607879fcf2607764b2b70d672ddaa26d2da13049f" "f21caace402180ab3dc5157d2bb843c4daafbe64aadc362c9f4558ac17ce43a2" "aed73c6d0afcf2232bb25ed2d872c7a1c4f1bda6759f84afc24de6a1aec93da8" default)))
  '(display-time-mode t)
  '(ede-project-directories (quote ("/usr/local/google/home/lally")))
  '(epg-gpg-program "/usr/bin/gpg2")
@@ -561,6 +510,7 @@ the form (display key-protocol hex-string)"
  '(gdb-show-changed-values t)
  '(gdb-speedbar-auto-raise t)
  '(global-hl-line-mode t)
+ '(global-yascroll-bar-mode nil)
  '(gnus-select-method (quote (nil "news")))
  '(haskell-program-name "cabal repl")
  '(ido-default-buffer-method (quote selected-window))
@@ -572,46 +522,44 @@ the form (display key-protocol hex-string)"
  '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-mouse org-git-link org-learn org-panel)))
  '(org-tags-exclude-from-inheritance (quote ("@CURRENT_WORK" "@READY_WORK" "@BLOCKED_WORK")))
  '(safe-local-variable-values (quote ((eval setq orgstruct-heading-prefix-regexp ";; ") (org-use-property-inheritance . t))))
+ '(semantic-mode t)
  '(send-mail-function (quote smtpmail-send-it))
  '(show-paren-mode t)
+ '(sml/theme (quote dark))
  '(tool-bar-mode nil)
  '(transient-mark-mode (quote (only . t)))
  '(typescript-indent-level 2))
- '(tss-jump-to-definition-key "C->")
- '(tss-popup-help-key "C-:"))
 
-(defun my-window-setup-hook (frame)
-  "Set window parameters, for those that don't seem to stick."
-  (modify-frame-parameters frame (list '(fill-column . 79)
-                                       '(background-color . "black")
-                                       '(foreground-color . "white")
-                                       '(cursor-color . "white")))
-  (set-fill-column 79)
-; THIS NEVER WORKED:  (set-face '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 68 :width normal :foundry "unknown" :family "PragmataPro"))))
-;  (set-face-attribute 'default nil :height 93)
-  (message "Setting window parameters for new frame")
-  (set-face-background 'region "midnight blue")
-  (show-paren-mode 1)
-  ; (set-face-background 'hl-line "#330")
-  (global-hl-line-mode 1)
-)
-(add-hook 'after-make-frame-functions 'my-window-setup-hook)
-(my-window-setup-hook nil)
+;; (defun my-window-setup-hook (frame)
+;;   "Set window parameters, for those that don't seem to stick."
+;;   (modify-frame-parameters frame (list '(fill-column . 79)
+;;                                        '(background-color . "black")
+;;                                        '(foreground-color . "white")
+;;                                        '(cursor-color . "white")))
+;; ; THIS NEVER WORKED:  (set-face '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 68 :width normal :foundry "unknown" :family "PragmataPro"))))
+;; ;  (set-face-attribute 'default nil :height 93)
+;;   (message "Setting window parameters for new frame")
+
+;;   (set-fill-column 79)
+;;   (show-paren-mode 1)
+;;   (global-hl-line-mode 1)
+;; )
+;(add-hook 'after-make-frame-functions 'my-window-setup-hook)
+;(my-window-setup-hook nil)
 
 (put 'narrow-to-region 'disabled nil)
 (set-variable 'mouse-autoselect-window nil)
-(setq-default ido-default-file-method 'selected-window)
+;(setq-default ido-default-file-method 'selected-window)
 (setq-default display-buffer-reuse-frames 1)
 (set-fill-column 79)
-(column-marker-1 81)
+;(column-marker-1 81)
 (global-font-lock-mode 1)
 ;(set-background-color "black")
 ;(set-foreground-color "white")
 ; (set-cursor-color "white")
-(set-face-background 'region "midnight blue")
-(show-paren-mode 1)
-(set-face-background 'hl-line "#330")
-(global-hl-line-mode 1)
+;(set-face-background 'region "midnight blue")
+;(set-face-background 'hl-line "#330")
+;(global-hl-line-mode 1)
 
 ;(require 'icicles)
 ;(require 'fuzzy-match)
@@ -656,21 +604,18 @@ the form (display key-protocol hex-string)"
 ;; * ORG MODE SETUP
 ;;============================================================
 ;(require 'org-install)
+(require 'org-bullets)
+
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-mode))
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.h$" . c++-mode))
 (setq org-clock-persist 'history)
 (org-clock-persistence-insinuate)
 
-;;============================================================
-;; Typescript setup
-;;============================================================
-(require 'tss)
-
 ;;-------------------------
 ;; This should be per-file!
+;; Lookup: emacs has file and directory-local vars. I could use those.
 ;;-------------------------
 ;; Use      #+TODO: TODO(t) WAIT(w@/!) | DONE(d!) CANCELED(c@) (as an example)
 ;; (setq org-todo-keywords
@@ -679,7 +624,7 @@ the form (display key-protocol hex-string)"
 ;;                   "TOSUBMIT(s)" "DONE(d)")))
 
 (set-variable 'org-hide-leading-stars t)
-
+(setq org-bullets-bullet-list '("◉" "+" "★" "►" "✦" "◇"))
 ;; ** ORG CAPTURE
 (setq org-default-notes-file "~/org/unsorted.org")
 (define-key global-map "\C-cr" 'org-capture) ; 'r' for remember.
@@ -721,7 +666,7 @@ the form (display key-protocol hex-string)"
 (setq org-completion-use-ido t)
 (setq ido-everywhere t)
 (setq ido-max-directory-size 100000)
-(ido-mode (quote both))
+(ido-mode 'both)
 ; Use the current window when visiting files and buffers with ido
 (setq ido-default-file-method 'selected-window)
 (setq ido-default-buffer-method 'selected-window)
@@ -729,6 +674,7 @@ the form (display key-protocol hex-string)"
 (setq org-indirect-buffer-display 'current-window)
 
 ; (org-agenda-files)
+; I donno what this is for.
 (setq org-agenda-time-grid
       '((weekly today require-timed remove-match)
         "----------------"
@@ -743,20 +689,28 @@ the form (display key-protocol hex-string)"
 (setq org-agenda-skip-scheduled-if-deadline-is-shown t)
 (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
 
+;;
+;; PlantUML and ditaa export setup.
+;;
+
 ;(org-babel-do-load-languages 'org-babel-load-languages '((emacs-lisp . nil) (C . t) (R . t)))
 ; (setq org-src-fontify-natively t)
 (org-babel-do-load-languages
  'org-babel-load-languages
- '((ditaa . t)))
+ '((ditaa . t)
+   (plantuml . t)))
+
+(setq org-plantuml-jar-path
+      (expand-file-name "~/bin/plantuml.jar"))
 
 (setq browse-url-browser-function 'browse-url-generic
       browse-url-generic-program "google-chrome")
-
 
 ;; ** ORG EDIT HOOK
 ;; -------------
 (defun my-org-hook ()
   (interactive)
+  (org-bullets-mode t)
   (auto-fill-mode 1)
   (hl-line-mode 1)
   (hs-minor-mode 1)
