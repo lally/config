@@ -82,13 +82,12 @@ the form (display key-protocol hex-string)"
 
 (global-set-key [f5] 'magit-status)
 
-(custom-set-faces
+;(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 81 :width condensed :foundry "unknown" :family "Anka/Coder Narrow"))))
- '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold)))))
+; '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 111 :width normal :family "Anka/Coder Narrow")))))
 
 
 ;; ALIASES
@@ -430,29 +429,15 @@ the form (display key-protocol hex-string)"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(color-theme-selection "Black" nil (color-theme))
- '(column-number-mode t)
- '(display-time-mode t)
- '(gdb-find-source-frame t)
- '(gdb-many-windows t)
- '(gdb-show-changed-values t)
- '(gdb-speedbar-auto-raise t)
- '(haskell-font-lock-symbols (quote unicode))
- '(haskell-program-name "cabal-dev ghci")
- '(ido-default-buffer-method (quote selected-window))
- '(ido-default-file-method (quote selected-window))
- '(inhibit-startup-screen t)
- '(org-agenda-files (quote ("~/org/toplevel/habits.org" "~/org/toplevel/incoming.org" "~/org/toplevel/learning.org" "~/org/toplevel/monitoring.org" "~/org/toplevel/optimization.org" "~/org/toplevel/pending.org" "~/org/toplevel/research.org" "~/org/toplevel/unsorted.org" "~/org/project/onegig.org" "~/org/project/scoreboard.org" "~/org/project/thwack.org" "~/org/project/twenty.org")))
- '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link org-learn org-panel)))
- '(safe-local-variable-values (quote ((org-use-property-inheritance . t))))
- '(show-paren-mode t)
- '(tool-bar-mode nil))
+ '(erc-modules
+   (quote
+    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands notifications readonly ring scrolltobottom services smiley stamp track))))
 
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
   (set-fill-column 79)
-  (set-default-font
-   "-unknown-Anka/Coder Narrow-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
+;  (set-default-font
+;   "-unknown-Anka/Coder Narrow-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
   (set-face-attribute 'default nil :height 93)
   (set-background-color "black")
   (set-foreground-color "white")
@@ -636,6 +621,31 @@ the form (display key-protocol hex-string)"
       "http://marmalade-repo.org/packages/"))
 (package-initialize)
 
+
+(require 'helm)
+(require 'helm-config)
+
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+(when (executable-find "curl")
+  (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t)
+
+(helm-mode 1)
+
 ;;============================================================
 ;; KEYBINDINGS
 ;;============================================================
@@ -673,3 +683,9 @@ the form (display key-protocol hex-string)"
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
 (global-set-key "\C-ct" 'org-time-stamp)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

@@ -5,6 +5,7 @@ then
 fi
 
 # notify-send "TITLE" "MESSAGE" works for gnome.
+export LS=$(which ls)
 
 #  This will take out the color codes for $TERM=dumb, ala emacs shell mode.
 if [ "${TERM}v" != "dumbv" ]
@@ -14,9 +15,9 @@ then
 #    export PS1="\[\033[31m\]$PWD\n\[\033[1;34m\][\D{%m/%d} \A::\u@\h]\\$\[\033[0m\] "
     export PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD}\007"'
     export PS1="\\[\033[1;34m\\][\D{%m/%d} \A::\u@\h \W]\\$\\[\033[0m\\] "
-    alias ls='/bin/ls --color -F'
-    alias ll='/bin/ls --color -lF'
-    alias sl='/bin/ls --color -F'
+    alias ls="$LS --color -F"
+    alias ll="$LS --color -lF"
+    alias sl="$LS --color -F"
     alias open='xdg-open'
     function title () {
 	export PROMPT_COMMAND='echo -ne "\033]0;'$1'\007"'
@@ -30,9 +31,9 @@ else
     #
     # Emacs. No color, but otherwise the same.
     export PS1='[\u@\h \W]\$ '
-    alias ls='/bin/ls -F'
-    alias ll='/bin/ls -lF'
-    alias sl='/bin/ls -F'
+    alias ls="$LS -F"
+    alias ll="$LS -lF"
+    alias sl="$LS -F"
     # This would probably be inherited from the environment (if I call EMACS from a shell, for example).
     unset PROMPT_COMMAND
     function title () {
@@ -51,16 +52,16 @@ fi
 
 
 # One of the longer PATHs I've seen.
-export PATH=~/bin:$PATH:~/.cabal/bin:/usr/sbin:/usr/local/haskell/current/bin
+export PATH=~/bin:$PATH  #:~/.cabal/bin:/usr/sbin:/usr/local/haskell/current/bin
 
 export LC_COLLATE="C"
 
 # Tools
-export JAVA_HOME=/usr/jdk/latest
-export SBCL_HOME=/opt/local/lib/sbcl
-export MANPATH=$MANPATH::/usr/man
+#export JAVA_HOME=/usr/jdk/latest
+#export SBCL_HOME=/opt/local/lib/sbcl
+#export MANPATH=$MANPATH::/usr/man
 #:/usr/man:/usr/sfw/man:/opt/csw/man:/opt/DTT/Man:/opt/sfw/man:/usr/X/man:/usr/X11/man:/usr/X11R6/man
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/haskell/current/lib
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/haskell/current/lib
 
 # Amazon web services
 if [ -d ~/.ec2 ]
@@ -95,7 +96,8 @@ then
 fi
 
 export PAGER=less
-export VISUAL=vi
+export LESS=-R
+export VISUAL=vim
 alias svndiff='svn diff --diff-cmd diff -x -uw'
 
 #source /opt/src/emacs-22.1/etc/emacs.bash
@@ -141,3 +143,4 @@ function xcat () {
 
 alias vim='emacsclient -t'
 
+export GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt

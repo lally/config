@@ -339,6 +339,13 @@ myLayout = dwmStyle shrinkText (theme myTheme) (
 -- TODO(lally): Look at scratchpad workspaces (Util.Scratchpad?
 -- scratchpadFilterOutWorkspace) to put the mount-info popup on.  Those should
 -- never get shown.
+
+isNotification :: Query Bool
+isNotification = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_NOTIFICATION"
+
+isDesktop :: Query Bool
+isDesktop = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_DESKTOP"
+
 myManageHook = composeAll
     [ manageHook kde4Config
     , className =? "MPlayer"        --> doFloat
@@ -348,8 +355,11 @@ myManageHook = composeAll
     , resource  =? "kdesktop"       --> doFloat
     , className =? "InputOutput"    --> doFloat
     , title     =? "Eclipse"        --> doFloat
+    , className =? "plasmashell" --> doFloat -- (doShift "misc2")
     , className =? "Plasma-desktop" --> doFloat -- (doShift "misc2")
     , isDialog                      --> doCenterFloat
+    , isNotification --> doFloat
+    , isDesktop --> doCenterFloat
     , isFullscreen --> doFullFloat ]
 
 
