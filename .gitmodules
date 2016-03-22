@@ -16,3 +16,15 @@
 [submodule "libs/powerline"]
 	path = libs/powerline
 	url = https://github.com/Lokaltog/powerline.git
+[submodule "libs/org-sync"]
+	path = libs/org-sync
+	url = git://orgmode.org/org-sync.git
+[submodule "tools/xmobar"]
+	path = tools/xmobar
+	url = https://github.com/jaor/xmobar.git
+[submodule "tools/hlint"]
+	path = tools/hlint
+	url = https://github.com/ndmitchell/hlint.git
+[submodule "libs/site-lisp/emacs-ctable"]
+	path = libs/site-lisp/emacs-ctable
+	url = https://github.com/kiwanami/emacs-ctable.git

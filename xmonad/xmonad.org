@@ -1,0 +1,214 @@
+#+TITLE: Xmonad Hacking Notes
+
+* Better GridSelect
+** Have a graphviz-layout tag graph of windows
+*** PROCESS
+**** As a separate module that's imported
+     - Create the module first
+     - only add a dumb hook from 
+**** Dump text to a secondary program
+**** Devel the program to pop-up what I want
+**** integrate back into my xmonad
+*** get the graph
+    - [X] Dump the untagged list of windows
+      - GridSelect sources:
+         #+begin_src hs
+         windowMap :: X [(String,Window)]
+         windowMap = do
+             ws <- gets windowset
+             wins <- mapM keyValuePair (W.allWindows ws)
+             return wins
+          where keyValuePair w = flip (,) w `fmap` decorateName' w
+
+         decorateName' :: Window -> X String
+         decorateName' w = do
+           fmap show $ getName w
+         #+end_src hs
+        
+    - [X] Pipe to a test program
+      That's simple enough for later, right now, use a dumb text file.
+      ~/input.txt
+
+    - [ ] Write a separate test program to draw the graph.
+      
+*** cairo render to a pixmap
+    Current conflict: I'm using a pango setup that has its own
+    widgets.  But, I can't do the layout I want with the gtk widget
+    layouts.  So, can I use pango for drawing the text directly on a
+    cairo canvas?
+
+*** display the pixmap
+
+** APIs
+*** Widget Layout
+**** Containers
+     [[http://hackage.haskell.org/package/gtk-0.12.5.7/docs/Graphics-UI-Gtk-Abstract-Container.html][G.U.G.Abstract.Container Docs]]
+     A window is a Container (instance of ContainerClass)
+     It holds one item.  Put another container in there (or just the canvas?)
+
+*** Canvas
+    [[http://hackage.haskell.org/package/gtk-0.12.5.7/docs/Graphics-UI-Gtk-Misc-DrawingArea.html#t:DrawingArea][Docs: DrawingArea]]
+**** Cairo
+     [[http://localhost:8080/gtk-0.12.5.7/html/Graphics-UI-Gtk-Cairo.html][Graphics.UI.Gtk.Cairo Docs]]
+     The Cairo Render monad can be used with Gtk.Cairo 
+     Color is controlled with setSourceColor
+**** Pango Drawing in Cairo
+     [[http://localhost:8080/pango-0.12.5.3/html/Graphics-Rendering-Pango-Cairo.html][G.R.Pango.Cairo Docs]]
+***** Font
+      PangoAttribute
+***** Number of lines
+      Depends on text width vs layout width.
+      Only goes > 1 when Ellipsize* is enabled.
+      
+
+* Built-in Webserver
+** Syncing threads
+*** XMonad's Main.hsc, the xmonad function loops forever
+    - Use 'connectionNumber dpy' to get the file handle for
+      the X connection
+    - Run my own select()
+      [[https://stackoverflow.com/questions/8592292/how-to-quit-the-blocking-of-xlibs-xnextevent][XNextEvent select() example]]
+    - And use a pipe with a 'notify' FD to indicate when I have work
+      in the TVAR to check.  The pipe's only purpose is to wake up the
+      select().
+      [[http://hackage.haskell.org/package/select-0.4.0.1/docs/System-Posix-IO-Select.html][select(2) library]]
+*** Where do I put the TVar?
+    - Put it right in main.  I directly invoke xmonad from xmonad.hs
+** Well, two TVars
+   - One for the current Xmonad state
+   - One for the current mutations to run on that state
+
+** Linking in yesod
+   The problem is haskell-platform.  Everything on it is so old that
+   it conflicts with ~cabal sandbox~.  The sandbox won't install
+   newer versions of packages installed system-wide.  So there are
+   nasty conflicts on chains of old packages.
+
+   Properly, I should nuke the platform and use ~xstow~ to manage a
+   minimal global ~ghc~ installation.  Let ~cabal~ install everything
+   needed for each project in the sandbox.
+
+
+
+* Synchronization Data
+ Ugh, there isn't enough information in the XState to be useful on the
+ IPC side.  Instead, we'll need a fully-queried window state.  That's
+ another data structure.  Additionally, it might need some
+ optimization on when everything's updated.  Well, the number of
+ windows is small, so I could just refresh everything every time for
+ right now.
+
+** Data Required
+*** For each window:
+     - Title
+     - Tags
+     - Geometry ?
+     - Desktop ?
+*** Added as ExtendedXState/ExtendedWindowInfo in XMonad.
+    
+** XMonad can't be the one doing this.
+   I'll want bits of state that aren't defined in xmonad, but
+   xmonad-contrib or xmonad-util.
+
+** So, good, take that out of xmonad and maintain that with closures 
+*** First, change the TVar from [IO ()] to [X ()]
+*** Then watch the windowset in the xstate
+    - Set implements Eq if the inner type implements E     - q
+    - Which it does!
+*** Every time it changes, run a closure to build ExtendedXState
+    - I'll have to keep the old one.
+    - And when do I monitor this?
+    - Huh.  Maybe be simple about it and poll at 10-25 Hz.
+    - A monitor thread?
+** Monitor thread
+   I should put together a utility launcher that wraps the call to
+   xmonad and launches everything else.
+   - Including a monitoring thread.
+*** Functions
+**** Maintain ExtendedXState
+**** A watchdog?
+*** Generalize to a timer and a list of actions [IO ()] to run
+
+#+begin_src hs
+data ExtendedWindowInfo = ExtendedWindowInfo
+    { wiTitle :: String
+    , wiTags :: [String]
+    }
+    
+data ExtendedXState = ExtendedXState { xsWindows :: [ExtendedWindowInfo] }
+
+-- | Builds an ExtendedXState from the current XState
+extendedXState :: X ExtendedXState
+extendedXState = do
+  let getWindowName w = do name <- getName w
+                           return $ show name
+      makeWindowInfo w = do name <- getWindowName w
+                            tags <- getTags w
+                            return $ ExtendedWindowInfo { name, tags }
+  all_windows <- gets windowset
+  wins <- mapM makeWindowInfo (W.allWindows all_windows)
+  return ExtendedXState { wins }
+#+end_src   
+
+#  LocalWords:  xmonad ExtendedXState Eq
+
+* Auto-Tagging
+** General System
+   Using [[http://hackage.haskell.org/package/configurator-0.2.0.2/docs/Data-Configurator.html][Data.Configurator]], have a config-file syntax, that allows nesting
+   identifiers.
+*** Syntax
+   wm_class_value {
+     # if we also run the _default class tag definition.
+     option_default = true  # true is the default value of the option
+     # implicitly for title of window
+     tag = regex;
+     tag = regex;
+     _X_PROPS = {
+       WM_OTHER = {
+
+       }
+     _OTHER_PLUGIN = {
+       plugin-specific props
+     }
+   }
+   default {
+     # used for every window, unless option_default was set to false in a match
+     # block.
+   }
+*** Chrome Plugin
+    Works with a chrome app ?
+**** App has a TCP server
+     TCP Server sends
+     window bounds {
+       list of urls
+     }
+     for each open browser window
+**** Window ID / Geometry is pretty good handle
+**** I can get the tabs under each window easily.
+**** Transmit at 1 Hz?
+** Emacs Plugin
+   Same as chrome plugin, buffer URL per frame
+** Integration
+*** Evaluate Matchers as part of extended refresh
+    The refresh is already written.  It just needs to load the matchers and
+    evaluate.
+
+** BUGS
+*** DONE Only returns windows on a mapped desktop
+    (or the current one?)
+*** TODO Doesn't understand UTF-8 properties.
+    - [ ] Find out how it's represented in the api model
+    - [ ] Decoding should be trivial.
+* XMonad Core
+** TODO Separate out eventAgent and stuff from core xmonad
+** TODO prepare a diff for xmonad.
+** TODO submit.
+
+* Performance
+** Why's it eating up memory?                                :PARTIALLYFIXED:
+   I'm not freeing up the X resources.  They're showing up as PINNED
+   in hp2any-manager.
+   - The rest is in doLayout/pureLayout.  That'll be something else to
+     look into.
+   - A cache for atoms seems to have stemmed the tide.
+

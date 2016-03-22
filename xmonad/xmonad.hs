@@ -8,7 +8,9 @@
 import XMonad
 import Control.Exception (bracket)
 import Data.Monoid
+import Graphics.X11.Xinerama
 import System.Exit
+import System.IO
 import System.Process (readProcessWithExitCode, system)
 
 import XMonad.Actions.GridSelect
@@ -20,6 +22,8 @@ import XMonad.Config.Gnome
 import XMonad.Config.Desktop
 
 import XMonad.Util.EZConfig
+import XMonad.Util.Loggers
+import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.Themes
 
 import XMonad.Hooks.DynamicLog
@@ -38,6 +42,11 @@ import XMonad.Layout.BoringWindows
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
+--
+-- Project-local imports
+--
+import Support
+
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
@@ -49,7 +58,7 @@ myFocusFollowsMouse = True
 
 -- Width of the window border in pixels.
 --
-myBorderWidth   = 0
+myBorderWidth   = 2
 
 -- modMask lets you specify which modkey you want to use. The default
 -- is mod1Mask ("left alt").  You may also consider using mod3Mask
@@ -57,6 +66,9 @@ myBorderWidth   = 0
 -- "windows key" is usually mod4Mask.
 --
 myModMask       = mod4Mask
+
+fontAt :: Int -> String
+fontAt num = "xft:Pragmata Pro:pixelsize=" ++ (show num)
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -67,8 +79,8 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["emacs","web","term","firefox","nx/misc",
-                   "emacs2","web2","term2","misc", "misc2"]
+myWorkspaces    = ["emacs","web","term","personal","doc read",
+                   "emacs2","web2","term2","misc", "config"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
@@ -125,7 +137,7 @@ getProdAccess = do
     case status of
         ExitSuccess -> return ()
         otherwise ->
-            spawnAndDo doCenterFloat "xterm -title prodaccess -geometry 60x5 -e prodaccess -s"
+            spawnAndDo doCenterFloat "xterm -title prodaccess -geometry 60x5 -e prodaccess -g -s"
 
 
 ------------------------------------------------------------------------
@@ -202,23 +214,22 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Toggle GridSelect program menu
     , ((modm              , xK_g     ), goToSelected gsconfig)
 
+    , ((modm .|. shiftMask, xK_g     ), showWindows)
+
    -- Note: I can also have a separate grid with different datasets;
    -- but I think I'd rather bind that to a larger "task" framework
    -- later.  Either way, see
    -- http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html
 
-    -- Logout
-    -- , ((modm .|. shiftMask, xK_q     ),
-    --                  spawn "gnome-session-save --gui --logout-dialog")
-
-    -- Fetch OTP
-    -- , ((modm .|. shiftMask, xK_i     ), spawn "/usr/bin/fetchotp -c")
-
     -- lock
     , ((modm .|. shiftMask, xK_l     ),
                   spawn "qdbus org.freedesktop.ScreenSaver /ScreenSaver Lock")
 
-    -- prodaccess
+
+    -- Clean restart, useful when in profiling mode.
+    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+
+      -- prodaccess
     , ((modm .|. controlMask, xK_p    ), getProdAccess)
     ]
     ++
@@ -287,7 +298,7 @@ myTheme = newTheme { themeName = "tronTheme"
                              , decoHeight = 24
                              , decoWidth = 300
 --                             , fontName = "xft:LMSansDemiCond10:pixelsize=12"
-                             , fontName = "xft:PragmaticaPro:pixelsize=12"
+                             , fontName = "xft:Pragmata Pro:pixelsize=12"
                              }
                    }
 
@@ -354,12 +365,15 @@ myManageHook = composeAll
     , resource  =? "desktop_window" --> doFloat
     , resource  =? "kdesktop"       --> doFloat
     , className =? "InputOutput"    --> doFloat
+    , className =? "knotify4"       --> doShift "config"
     , title     =? "Eclipse"        --> doFloat
     , className =? "plasmashell" --> doFloat -- (doShift "misc2")
     , className =? "Plasma-desktop" --> doFloat -- (doShift "misc2")
+    , className =? "knotify4"       --> doIgnore
     , isDialog                      --> doCenterFloat
     , isNotification --> doFloat
     , isDesktop --> doCenterFloat
+    , title     =? "FLOAT"          --> doCenterFloat
     , isFullscreen --> doFullFloat ]
 
 
@@ -400,27 +414,42 @@ myStartupHook = return ()
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
-
--- Run xmonad with the settings you specify. No need to modify this.
 --
-main = xmonad kde4Config {
-      -- simple stuff
-        terminal           = myTerminal,
-        focusFollowsMouse  = myFocusFollowsMouse,
-        borderWidth        = myBorderWidth,
-        modMask            = myModMask,
-        workspaces         = myWorkspaces,
-        normalBorderColor  = myNormalBorderColor,
-        focusedBorderColor = myFocusedBorderColor,
+main = do if not Graphics.X11.Xinerama.compiledWithXinerama 
+            then putStrLn "WARNING: Xinerama was not compiled in."
+            else do  xmproc <- spawnPipe "~/config/bin/xmobar ~/config/xmobarrc"
+                     {- inTVar <- newTVarIO []
+                     outTVar <- newTVarIO Nothing 
+                     (readEnd, wrEnd) <- createPipe
+                     -- forkIO the web server here.
+                     ipcThread <- forkIO $ runIPCServer wrEnd outTVar inTVar
+                     -- modified xmonad will use the same triplet for IPC
+                     xmonad readEnd inTVar outTVar kde4Config -}
+                     -- launchXMonad kde4Config {
+                     launchXMonad $ ewmh desktopConfig {
+                      -- simple stuff
+                        terminal           = myTerminal,
+                        focusFollowsMouse  = myFocusFollowsMouse,
+                        borderWidth        = myBorderWidth,
+                        modMask            = myModMask,
+                        workspaces         = myWorkspaces,
+                        normalBorderColor  = myNormalBorderColor,
+                        focusedBorderColor = myFocusedBorderColor,
 
-      -- key bindings
-        keys               = myKeys,
-        mouseBindings      = myMouseBindings,
+                      -- key bindings
+                        keys               = myKeys,
+                        mouseBindings      = myMouseBindings,
 
-      -- hooks, layouts
-        layoutHook         = desktopLayoutModifiers (myLayout), 
-        manageHook         = myManageHook,
-        handleEventHook    = myEventHook,
-        startupHook        = myStartupHook
-    }
+                      -- hooks, layouts
+                        layoutHook         = desktopLayoutModifiers (myLayout), 
+                        logHook = dynamicLogWithPP $ xmobarPP
+                                  { ppOutput = hPutStrLn xmproc
+                                  , ppTitle = xmobarColor "grey" "" . shorten 50
+                                  , ppExtras = [xmobarColorL "green" "" logCurrent]
+                                  , ppOrder = \(workspaces:_:title:current:_) ->
+                                              [current, title] },
+                        manageHook         = myManageHook,
+                        handleEventHook    = myEventHook,
+                        startupHook        = myStartupHook
+                     }  
 
