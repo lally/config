@@ -108,7 +108,7 @@ greenColorizer = colorRangeFromClassName
 
 -- defaultGSConfig
 gsconfig = (buildDefaultGSConfig greenColorizer)  {
-             gs_font = "xft:Anka/Coder Condensed:pixelsize=12",
+             gs_font = "xft:PragmaticaPro:pixelsize=12",
              gs_cellheight = 30,
              gs_cellwidth = 300,
              gs_cellpadding = 15
@@ -350,6 +350,13 @@ myLayout = dwmStyle shrinkText (theme myTheme) (
 -- TODO(lally): Look at scratchpad workspaces (Util.Scratchpad?
 -- scratchpadFilterOutWorkspace) to put the mount-info popup on.  Those should
 -- never get shown.
+
+isNotification :: Query Bool
+isNotification = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_NOTIFICATION"
+
+isDesktop :: Query Bool
+isDesktop = isInProperty "_NET_WM_WINDOW_TYPE" "_NET_WM_WINDOW_TYPE_DESKTOP"
+
 myManageHook = composeAll
     [ manageHook kde4Config
     , className =? "MPlayer"        --> doFloat
@@ -360,9 +367,12 @@ myManageHook = composeAll
     , className =? "InputOutput"    --> doFloat
     , className =? "knotify4"       --> doShift "config"
     , title     =? "Eclipse"        --> doFloat
+    , className =? "plasmashell" --> doFloat -- (doShift "misc2")
     , className =? "Plasma-desktop" --> doFloat -- (doShift "misc2")
     , className =? "knotify4"       --> doIgnore
     , isDialog                      --> doCenterFloat
+    , isNotification --> doFloat
+    , isDesktop --> doCenterFloat
     , title     =? "FLOAT"          --> doCenterFloat
     , isFullscreen --> doFullFloat ]
 
@@ -382,7 +392,7 @@ managementHooks = [
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = mappend fullscreenEventHook ewmhDesktopsEventHook -- fullscreenEventHook
+myEventHook = fullscreenEventHook -- mappend fullscreenEventHook ewmhDesktopsEventHook -- 
 
 ------------------------------------------------------------------------
 -- Status bars and logging

@@ -79,6 +79,11 @@ the form (display key-protocol hex-string)"
 ;;============================================================
 ;; ALL OF IT
 ;;
+;; When the site-libs are present
+(when (file-accessible-directory-p "~/config/libs")
+  (progn
+    (add-to-list 'load-path "~/config/libs/magit-0.8.2")
+))
 
 (if (file-exists-p "/usr/share/emacs24/site-lisp/emacs-google-config/devtools/editors/emacs/google.el")
 ;;"/home/build/public/eng/elisp/google.el")
@@ -144,11 +149,12 @@ the form (display key-protocol hex-string)"
 ;(require 'git-gutter-fringe+)
 
 
-(custom-set-faces
+;(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+; '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 111 :width normal :family "Anka/Coder Narrow")))))
  '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 68 :width normal :foundry "unknown" :family "PragmataPro"))))
  '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold))) t)
  '(mode-line ((t (:background "#212931" :foreground "#eeeeec" :box (:line-width -1 :style released-button) :height 1.0 :family "PragmataPro"))))
@@ -384,6 +390,24 @@ the form (display key-protocol hex-string)"
   (interactive)
   (other-window -1))
 
+;;============================================================
+;; Typescript setup
+;;============================================================
+;; If use bundled typescript.el,
+;(require 'typescript)
+;(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+
+;(require 'tss)
+
+;; Key binding
+;(setq tss-popup-help-key "C-:")
+;(setq tss-jump-to-definition-key "C->")
+
+;; Make config suit for you. About the config item, eval the following sexp.
+;; (customize-group "tss")
+
+;; Do setting recommemded configuration
+;(tss-config-default)
 ;; http://dfan.org/blog/2009/02/19/emacs-dedicated-windows/
 (defun toggle-current-window-dedication ()
  (interactive)
@@ -565,6 +589,9 @@ the form (display key-protocol hex-string)"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(erc-modules
+   (quote
+    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands notifications readonly ring scrolltobottom services smiley stamp track))))
  '(column-number-mode t)
  '(display-time-mode t)
  '(ecb-options-version "2.40")
@@ -614,6 +641,8 @@ the form (display key-protocol hex-string)"
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
   (set-fill-column 79)
+;  (set-default-font
+;   "-unknown-Anka/Coder Narrow-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
   (set-face-attribute 'default nil :height 93)
   (set-cursor-color "white")
   (set-face-background 'region "midnight blue")
@@ -913,6 +942,15 @@ the form (display key-protocol hex-string)"
 ;;  to other preferences above.
 
 
+(set-background-color "black")
+(set-foreground-color "white")
+(set-cursor-color "white")
+(set-face-background 'region "midnight blue")
+(require 'package)
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                         ("marmalade" . "http://marmalade-repo.org/packages/")
+                         ("melpa" . "http://melpa.milkbox.net/packages/")))
+(package-initialize)
 
 
 ;;============================================================
@@ -932,6 +970,31 @@ the form (display key-protocol hex-string)"
       (cscope-setup)
       )
   (file-error (message "xcscope not available.")))
+
+
+(require 'helm)
+(require 'helm-config)
+
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+(when (executable-find "curl")
+  (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t)
+
+(helm-mode 1)
 
 ;;============================================================
 ;; * KEYBINDINGS
@@ -983,6 +1046,12 @@ the form (display key-protocol hex-string)"
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
 (global-set-key "\C-ct" 'org-time-stamp)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 (global-set-key [pause] 'toggle-current-window-dedication)
 ; TODO: find module for highlighting the current column, and add it in
 ; a keystroke here.
