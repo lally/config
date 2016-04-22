@@ -317,6 +317,7 @@ the form (display key-protocol hex-string)"
   (turn-on-haskell-doc-mode)
   (turn-on-haskell-simple-indent)
   (turn-on-font-lock)
+  (set-variable 'show-trailing-whitespace t t)
   (imenu-add-menubar-index))
 
 (add-hook 'haskell-mode-hook 'my-haskell-mode)
@@ -415,7 +416,7 @@ the form (display key-protocol hex-string)"
   (c-set-offset 'tomost-intro '-)
   (c-set-offset 'innamespace  [0])
   (linum-mode)
-  (set-variable 'show-trailing-whitespace t)
+  (set-variable 'show-trailing-whitespace t t)
   (flyspell-prog-mode)
 ;
 ; Ooooh, this is nice, but I may get tired of it.
@@ -437,10 +438,12 @@ the form (display key-protocol hex-string)"
   (interactive)
   ; (tss-setup-current-buffer)
   (hs-minor-mode 1)
+  (set-variable 'show-trailing-whitespace t t)
 )
 
 (defun local-js-mode-hook()
   (interactive)
+  (set-variable 'show-trailing-whitespace t t)
   (hs-minor-mode 1)
 )
 
@@ -460,6 +463,7 @@ the form (display key-protocol hex-string)"
   (column-number-mode 1)
   (column-marker-1 79)
   (flyspell-prog-mode)
+  (set-variable 'show-trailing-whitespace t t)
   (orgtbl-mode))
 (add-hook 'python-mode-hook 'my-py-mode-hook)
 (set-variable 'python-indent 2)
@@ -489,7 +493,7 @@ the form (display key-protocol hex-string)"
 ;; There has to be a separate 'global prefs' section, and each
 ;; language module can change it from there.
 
-(setq-default show-trailing-whitespace t)
+;(setq-default show-trailing-whitespace t)
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 
@@ -589,10 +593,11 @@ the form (display key-protocol hex-string)"
  %i"))) t)
  '(org-enforce-todo-dependencies t)
  '(org-agenda-custom-commands (quote (("n" "Agenda and all TODO's" ((agenda "" nil) (alltodo "" nil)) nil) ("x" "@CURRENT_WORK" tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK" nil) ("d" "Dashboard" ((tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK") (tags-todo "@WORK_CTX|@TODO"))))))
- '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
+ '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags
+ org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 3))))
  '(safe-local-variable-values (quote ((haskell-process-use-ghci . t) (haskell-indent-spaces . 4) (org-use-property-inheritance . t))))
- '(show-trailing-whitespace t)
+; '(show-trailing-whitespace t)
  '(tss-jump-to-definition-key "C->")
  '(tss-popup-help-key "C-:")
  '(org-tags-exclude-from-inheritance (quote ("@CURRENT_WORK" "@READY_WORK" "@BLOCKED_WORK")))
@@ -778,6 +783,7 @@ the form (display key-protocol hex-string)"
   (flyspell-mode 1)
   (column-number-mode 1)
   (set-fill-column 79)
+  (setq show-trailing-whitespace nil)
   (column-marker-1 79))
 
 (add-hook 'org-mode-hook 'my-org-hook)
@@ -886,7 +892,7 @@ the form (display key-protocol hex-string)"
      (require 'sr-speedbar)
      (setq speedbar-use-images nil)
      (make-face 'speedbar-face)
-     (set-face-font 'speedbar-face "PragmataPro-7")
+;     (set-face-font 'speedbar-face "PragmataPro-7")
      (setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
      )
   (file-error (message "sr-speedbar not available")))

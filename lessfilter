@@ -3,13 +3,16 @@ case "$1" in
     *.awk|*.groff|*.java|*.js|*.m4|*.php|*.pl|*.pm|*.pod|*.sh|\
     *.ad[asb]|*.asm|*.inc|*.[ch]|*.[ch]pp|*.[ch]xx|*.cc|*.hh|\
     *.lsp|*.l|*.pas|*.p|*.xml|*.xps|*.xsl|*.axp|*.ppd|*.pov|\
-    *.diff|*.patch|*.py|*.rb|*.sql|*.ebuild|*.eclass|*.json|*.hs|*.lhs)
+    *.diff|*.patch|*.py|*.rb|*.sql|*.ebuild|*.eclass|*.hs|*.lhs)
         pygmentize -f 256 "$1";;
     .bashrc|.bash_aliases|.bash_environment)
         pygmentize -f 256 -l sh "$1"
         ;;
+    *.json)
+        python -mjson.tool "$1" | pygmentize -f 256 -l json
+        ;;
     *.md)
-        pandoc -s -f markdown -t man "$1" | groff -T utf8 -man -
+        pandoc -s --no-wrap -f markdown -t man "$1" | groff -T utf8 -man - 2>/dev/null
        # markdown "$1" | html2text
         ;;
     *)
