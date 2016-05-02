@@ -473,6 +473,7 @@ the form (display key-protocol hex-string)"
 
 (add-hook 'c++-mode-hook 'local-cpp-mode-hook)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
+(add-hook 'typescript-mode-hook 'local-typescript-mode-hook)
 (add-hook 'borg-mode-hook 'local-borg-mode-hook)
 (add-hook 'latex-mode-hook 'local-latex-mode-hook)
 
