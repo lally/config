@@ -42,7 +42,7 @@
                       ('double-prime #X2033)
                       ('for-all #X2200)
                       ('there-exists #X2203)
-                      ('element-of #X2208)
+;                      ('element-of #X2208)
                       ('square-root #X221A)
                       ('squared #X00B2)
                       ('cubed #X00B3)

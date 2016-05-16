@@ -15,6 +15,7 @@
 (defvar autosave-dir (expand-file-name "~/tmp/emacs_autosaves/"))
 (make-directory autosave-dir t)
 (set-language-environment "UTF-8")
+(toggle-debug-on-quit)
 
 (defun auto-save-file-name-p (filename)
   (string-match "^#.*#$" (file-name-nondirectory filename)))
@@ -172,7 +173,6 @@ the form (display key-protocol hex-string)"
 (require 'org-install)
 (require 'org-habit)
 (require 'org-protocol)
-(require 'haskell-mode)
 (defun my-gdb-mode ()
   (hl-line-mode 't)
   (fring-mode '(8 . 0)))
@@ -266,47 +266,39 @@ the form (display key-protocol hex-string)"
 (require 'inf-haskell)
 (require 'mmm-mode)
 
-(defun haskell-insert-lambda ()
-  (interactive)
-  (insert-char ?λ)
-)
-
 ;; Ugh, needs emacs 24.4.
 ;; Copied from http://www.emacswiki.org/emacs/PrettySymbolsForLanguages
 (defun haskell-unicode ()
-  (interactive)
-  (substitute-patterns-with-unicode
-   (list
-    (cons "\\s \\(<-\\)\\s " 'left-arrow)
-    (cons "\\s \\(->\\)\\s " 'right-arrow)
-    (cons "\\s \\(==\\)\\s " 'identical)
-    (cons "\\s \\(/=\\)\\s " 'not-identical)
-    (cons "\\s \\(()\\)\\(\\s \\|$\\)" 'nil)
-    (cons "\\<\\(sqrt\\)\\>" 'square-root)
-    (cons "\\s \\(&&\\)\\s " 'logical-and)
-    (cons "\\s \\(||\\)\\s " 'logical-or)
-    (cons "\\<\\(not\\)\\>" 'logical-neg)
-    (cons "\\s \\(>\\)\\[^=\\]" 'greater-than)
-    (cons "\\s \\(<\\)\\[^=\\]" 'less-than)
-    (cons "\\s \\(>=\\)\\s " 'greater-than-or-equal-to)
-    (cons "\\s \\(<=\\)\\s " 'less-than-or-equal-to)
-    (cons "\\<\\(alpha\\)\\>" 'alpha)
-    (cons "\\<\\(beta\\)\\>" 'beta)
-    (cons "\\<\\(gamma\\)\\>" 'gamma)
-    (cons "\\<\\(delta\\)\\>" 'delta)
-    (cons "\\s \\(''\\)\\s " 'double-prime)
-    (cons "\\s \\('\\)\\s " 'prime)
-    (cons "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\).*?\\s *->" 'lambda)
-    (cons "\\s \\(!!\\)\\s " 'double-exclamation)
-    (cons "\\s \\(\\.\\.\\)\\s " 'horizontal-ellipsis))))
+   (interactive)
+   (substitute-patterns-with-unicode
+    (list
+     (cons "\\s \\(<-\\)\\s " 'left-arrow)
+     (cons "\\s \\(->\\)\\s " 'right-arrow)
+     (cons "\\s \\(==\\)\\s " 'identical)
+     (cons "\\s \\(/=\\)\\s " 'not-identical)
+     (cons "\\s \\(()\\)\\(\\s \\|$\\)" 'nil)
+     (cons "\\<\\(sqrt\\)\\>" 'square-root)
+     (cons "\\s \\(&&\\)\\s " 'logical-and)
+     (cons "\\s \\(||\\)\\s " 'logical-or)
+     (cons "\\<\\(not\\)\\>" 'logical-neg)
+     (cons "\\s \\(>\\)\\[^=\\]" 'greater-than)
+     (cons "\\s \\(<\\)\\[^=\\]" 'less-than)
+     (cons "\\s \\(>=\\)\\s " 'greater-than-or-equal-to)
+     (cons "\\s \\(<=\\)\\s " 'less-than-or-equal-to)
+     (cons "\\<\\(alpha\\)\\>" 'alpha)
+     (cons "\\<\\(beta\\)\\>" 'beta)
+     (cons "\\<\\(gamma\\)\\>" 'gamma)
+     (cons "\\<\\(delta\\)\\>" 'delta)
+     (cons "\\s \\(''\\)\\s " 'double-prime)
+     (cons "\\s \\('\\)\\s " 'prime)
+     (cons "\\s (?\\(\\\\\\)\\s *\\(\\w\\|_\\).*?\\s *->" 'lambda)
+     (cons "\\s \\(!!\\)\\s " 'double-exclamation)
+     (cons "\\s \\(\\.\\.\\)\\s " 'horizontal-ellipsis))))
 
 
-(add-hook 'haskell-mode-hook 'my-mmm-mode)
+;(add-hook 'haskell-mode-hook 'my-mmm-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 (add-hook 'haskell-mode-hook 'haskell-unicode)
-(add-hook 'haskell-mode-hook 
-          (lambda ()
-            (local-set-key (kbd "M-\\") 'haskell-insert-lambda)))
 ; literate haskell (.lhs) support.
 (autoload 'ghc-init "ghc" nil t)
 (autoload 'ghc-debug "ghc" nil t)
@@ -562,13 +554,16 @@ the form (display key-protocol hex-string)"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
+ '(custom-safe-themes
+   (quote
+    ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "91fba9a99f7b64390e1f56319c3dbbaed22de1b9676b3c73d935bf62277b799c" "db9feb330fd7cb170b01b8c3c6ecdc5179fc321f1a4824da6c53609b033b2810" "09669536b4a71f409e7e2fd56609cd7f0dff2850d4cbfb43916cc1843c463b80" "75c0b9f9f90d95ac03f8647c75a91ec68437c12ff598e2abb22418cd4b255af0" "e033c4abd259afac2475abd9545f2099a567eb0e5ec4d1ed13567a77c1919f8f" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "cdfb22711f64d0e665f40b2607879fcf2607764b2b70d672ddaa26d2da13049f" "f21caace402180ab3dc5157d2bb843c4daafbe64aadc362c9f4558ac17ce43a2" "aed73c6d0afcf2232bb25ed2d872c7a1c4f1bda6759f84afc24de6a1aec93da8" default)))
  '(display-time-mode t)
  '(ecb-options-version "2.40")
- '(erc-modules (quote (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands readonly replace ring stamp track)))
- '(custom-safe-themes (quote ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "91fba9a99f7b64390e1f56319c3dbbaed22de1b9676b3c73d935bf62277b799c" "db9feb330fd7cb170b01b8c3c6ecdc5179fc321f1a4824da6c53609b033b2810" "09669536b4a71f409e7e2fd56609cd7f0dff2850d4cbfb43916cc1843c463b80" "75c0b9f9f90d95ac03f8647c75a91ec68437c12ff598e2abb22418cd4b255af0" "e033c4abd259afac2475abd9545f2099a567eb0e5ec4d1ed13567a77c1919f8f" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "cdfb22711f64d0e665f40b2607879fcf2607764b2b70d672ddaa26d2da13049f" "f21caace402180ab3dc5157d2bb843c4daafbe64aadc362c9f4558ac17ce43a2" "aed73c6d0afcf2232bb25ed2d872c7a1c4f1bda6759f84afc24de6a1aec93da8" default)))
- '(display-time-mode t)
  '(ede-project-directories (quote ("/usr/local/google/home/lally")))
  '(epg-gpg-program "/usr/bin/gpg2")
+ '(erc-modules
+   (quote
+    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands readonly replace ring stamp track)))
  '(gdb-find-source-frame t)
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
@@ -577,32 +572,68 @@ the form (display key-protocol hex-string)"
  '(global-hl-line-mode t)
  '(global-yascroll-bar-mode nil)
  '(gnus-select-method (quote (nil "news")))
+ '(haskell-mode-hook
+   (quote
+    (turn-on-haskell-indentation turn-on-font-lock turn-on-haskell-doc-mode turn-on-haskell-unicode-input-method)))
  '(haskell-program-name "cabal repl")
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
  '(inhibit-startup-screen t)
- '(org-agenda-files (quote ("~/org/project/uproxy/tls.org" "~/org/capture.org" "~/org/from-mobile.org" "~/org/perf.org" "~/org/personal.org" "~/org/plan-scratchpad.org" "~/org/productivity.org" "~/org/speculation.org" "~/org/unsorted.org" "~/org/project/uproxy/china.org" "~/org/project/uproxy/code.org" "~/org/project/uproxy/design-manual.org" "~/org/project/uproxy/docker.org" "~/org/project/uproxy/ignored-tickets.org" "~/org/project/uproxy/sctp.org" "~/org/project/uproxy/security.org" "~/org/project/uproxy/toplevel.org" "~/org/project/uproxy/uproxy.org" "~/org/project/uproxy/webrtc.org")))
- '(org-capture-templates (quote (("t" "Todo" entry (file+headline "~/org/unsorted.org" "Tasks") "* TODO %?
+ '(org-agenda-custom-commands
+   (quote
+    (("n" "Agenda and all TODO's"
+      ((agenda "" nil)
+       (alltodo "" nil))
+      nil)
+     ("x" "@CURRENT_WORK" tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK" nil)
+     ("d" "Dashboard"
+      ((tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK")
+       (tags-todo "@WORK_CTX|@TODO"))))))
+ '(org-agenda-files
+   (quote
+    ("~/org/project/uproxy/tls.org" "~/org/capture.org" "~/org/from-mobile.org" "~/org/perf.org" "~/org/personal.org" "~/org/plan-scratchpad.org" "~/org/productivity.org" "~/org/speculation.org" "~/org/unsorted.org" "~/org/project/uproxy/china.org" "~/org/project/uproxy/code.org" "~/org/project/uproxy/design-manual.org" "~/org/project/uproxy/docker.org" "~/org/project/uproxy/ignored-tickets.org" "~/org/project/uproxy/sctp.org" "~/org/project/uproxy/security.org" "~/org/project/uproxy/toplevel.org" "~/org/project/uproxy/uproxy.org" "~/org/project/uproxy/webrtc.org")))
+ '(org-capture-templates
+   (quote
+    (("t" "Todo" entry
+      (file+headline "~/org/unsorted.org" "Tasks")
+      "* TODO %?
   %i
-  %a") ("i" "Idea" entry (file+headline "~/org/unsorted.org" "Ideas") "* %T Idea") ("p" "Planning Journal Entry" entry (file "~/org/plan-scratchpad.org") "* %T Plan") ("m" "Meta (Productivity) Entry" entry (file "~/org/productivity.org") "* %T Meta") ("l" "Link" entry (file+olp "~/org/intel/unsorted.org" "Web Links") "* %a
+  %a")
+     ("i" "Idea" entry
+      (file+headline "~/org/unsorted.org" "Ideas")
+      "* %T Idea")
+     ("p" "Planning Journal Entry" entry
+      (file "~/org/plan-scratchpad.org")
+      "* %T Plan")
+     ("m" "Meta (Productivity) Entry" entry
+      (file "~/org/productivity.org")
+      "* %T Meta")
+     ("l" "Link" entry
+      (file+olp "~/org/intel/unsorted.org" "Web Links")
+      "* %a
  %?
  %i"))) t)
  '(org-enforce-todo-dependencies t)
- '(org-agenda-custom-commands (quote (("n" "Agenda and all TODO's" ((agenda "" nil) (alltodo "" nil)) nil) ("x" "@CURRENT_WORK" tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK" nil) ("d" "Dashboard" ((tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK") (tags-todo "@WORK_CTX|@TODO"))))))
- '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
+ '(org-modules
+   (quote
+    (org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 3))))
- '(safe-local-variable-values (quote ((haskell-process-use-ghci . t) (haskell-indent-spaces . 4) (org-use-property-inheritance . t))))
- '(show-trailing-whitespace t)
- '(tss-jump-to-definition-key "C->")
- '(tss-popup-help-key "C-:")
  '(org-tags-exclude-from-inheritance (quote ("@CURRENT_WORK" "@READY_WORK" "@BLOCKED_WORK")))
- '(safe-local-variable-values (quote ((eval setq orgstruct-heading-prefix-regexp ";; ") (org-use-property-inheritance . t))))
+ '(safe-local-variable-values
+   (quote
+    ((haskell-process-use-ghci . t)
+     (haskell-indent-spaces . 4)
+     (eval setq orgstruct-heading-prefix-regexp ";; ")
+     (org-use-property-inheritance . t))))
  '(semantic-mode t)
  '(send-mail-function (quote smtpmail-send-it))
  '(show-paren-mode t)
+ '(show-trailing-whitespace t)
  '(sml/theme (quote dark))
  '(tool-bar-mode nil)
  '(transient-mark-mode (quote (only . t)))
+ '(tss-jump-to-definition-key "C->")
+ '(tss-popup-help-key "C-:")
  '(typescript-indent-level 2))
 
 (smart-mode-line-enable t)
@@ -984,4 +1015,3 @@ the form (display key-protocol hex-string)"
 ;; Local Variables:
 ;; mode: lisp
 ;; End:
-
