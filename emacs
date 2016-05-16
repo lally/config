@@ -80,6 +80,11 @@ the form (display key-protocol hex-string)"
 ;;============================================================
 ;; ALL OF IT
 ;;
+;; When the site-libs are present
+(when (file-accessible-directory-p "~/config/libs")
+  (progn
+    (add-to-list 'load-path "~/config/libs/magit-0.8.2")
+))
 
 (if (file-exists-p "/usr/share/emacs24/site-lisp/emacs-google-config/devtools/editors/emacs/google.el")
 ;;"/home/build/public/eng/elisp/google.el")
@@ -145,11 +150,12 @@ the form (display key-protocol hex-string)"
 ;(require 'git-gutter-fringe+)
 
 
-(custom-set-faces
+;(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+; '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 111 :width normal :family "Anka/Coder Narrow")))))
  '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 68 :width normal :foundry "unknown" :family "PragmataPro"))))
  '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold))) t)
  '(mode-line ((t (:background "#212931" :foreground "#eeeeec" :box (:line-width -1 :style released-button) :height 1.0 :family "PragmataPro"))))
@@ -309,6 +315,7 @@ the form (display key-protocol hex-string)"
   (turn-on-haskell-doc-mode)
   (turn-on-haskell-simple-indent)
   (turn-on-font-lock)
+  (set-variable 'show-trailing-whitespace t t)
   (imenu-add-menubar-index))
 
 (add-hook 'haskell-mode-hook 'my-haskell-mode)
@@ -375,6 +382,24 @@ the form (display key-protocol hex-string)"
   (interactive)
   (other-window -1))
 
+;;============================================================
+;; Typescript setup
+;;============================================================
+;; If use bundled typescript.el,
+;(require 'typescript)
+;(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+
+;(require 'tss)
+
+;; Key binding
+;(setq tss-popup-help-key "C-:")
+;(setq tss-jump-to-definition-key "C->")
+
+;; Make config suit for you. About the config item, eval the following sexp.
+;; (customize-group "tss")
+
+;; Do setting recommemded configuration
+;(tss-config-default)
 ;; http://dfan.org/blog/2009/02/19/emacs-dedicated-windows/
 (defun toggle-current-window-dedication ()
  (interactive)
@@ -407,7 +432,7 @@ the form (display key-protocol hex-string)"
   (c-set-offset 'tomost-intro '-)
   (c-set-offset 'innamespace  [0])
   (linum-mode)
-  (set-variable 'show-trailing-whitespace t)
+  (set-variable 'show-trailing-whitespace t t)
   (flyspell-prog-mode)
 ;
 ; Ooooh, this is nice, but I may get tired of it.
@@ -429,15 +454,18 @@ the form (display key-protocol hex-string)"
   (interactive)
   ; (tss-setup-current-buffer)
   (hs-minor-mode 1)
+  (set-variable 'show-trailing-whitespace t t)
 )
 
 (defun local-js-mode-hook()
   (interactive)
+  (set-variable 'show-trailing-whitespace t t)
   (hs-minor-mode 1)
 )
 
 (add-hook 'c++-mode-hook 'local-cpp-mode-hook)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
+(add-hook 'typescript-mode-hook 'local-typescript-mode-hook)
 (add-hook 'borg-mode-hook 'local-borg-mode-hook)
 (add-hook 'latex-mode-hook 'local-latex-mode-hook)
 
@@ -452,6 +480,7 @@ the form (display key-protocol hex-string)"
   (column-number-mode 1)
   (column-marker-1 79)
   (flyspell-prog-mode)
+  (set-variable 'show-trailing-whitespace t t)
   (orgtbl-mode))
 (add-hook 'python-mode-hook 'my-py-mode-hook)
 (set-variable 'python-indent 2)
@@ -481,7 +510,7 @@ the form (display key-protocol hex-string)"
 ;; There has to be a separate 'global prefs' section, and each
 ;; language module can change it from there.
 
-(setq-default show-trailing-whitespace t)
+;(setq-default show-trailing-whitespace t)
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 
@@ -553,6 +582,9 @@ the form (display key-protocol hex-string)"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(erc-modules
+   (quote
+    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands notifications readonly ring scrolltobottom services smiley stamp track))))
  '(column-number-mode t)
  '(custom-safe-themes
    (quote
@@ -614,10 +646,14 @@ the form (display key-protocol hex-string)"
  %?
  %i"))) t)
  '(org-enforce-todo-dependencies t)
- '(org-modules
-   (quote
-    (org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
+ '(org-agenda-custom-commands (quote (("n" "Agenda and all TODO's" ((agenda "" nil) (alltodo "" nil)) nil) ("x" "@CURRENT_WORK" tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK" nil) ("d" "Dashboard" ((tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK") (tags-todo "@WORK_CTX|@TODO"))))))
+ '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags
+ org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 3))))
+ '(safe-local-variable-values (quote ((haskell-process-use-ghci . t) (haskell-indent-spaces . 4) (org-use-property-inheritance . t))))
+; '(show-trailing-whitespace t)
+ '(tss-jump-to-definition-key "C->")
+ '(tss-popup-help-key "C-:")
  '(org-tags-exclude-from-inheritance (quote ("@CURRENT_WORK" "@READY_WORK" "@BLOCKED_WORK")))
  '(safe-local-variable-values
    (quote
@@ -640,6 +676,8 @@ the form (display key-protocol hex-string)"
 (defun my-window-setup-hook (frame)
   "Set window parameters, for those that don't seem to stick."
   (set-fill-column 79)
+;  (set-default-font
+;   "-unknown-Anka/Coder Narrow-normal-normal-condensed-*-*-*-*-*-m-0-iso10646-1")
   (set-face-attribute 'default nil :height 93)
   (set-cursor-color "white")
   (set-face-background 'region "midnight blue")
@@ -809,6 +847,7 @@ the form (display key-protocol hex-string)"
   (flyspell-mode 1)
   (column-number-mode 1)
   (set-fill-column 79)
+  (setq show-trailing-whitespace nil)
   (column-marker-1 79))
 
 (add-hook 'org-mode-hook 'my-org-hook)
@@ -917,7 +956,7 @@ the form (display key-protocol hex-string)"
      (require 'sr-speedbar)
      (setq speedbar-use-images nil)
      (make-face 'speedbar-face)
-     (set-face-font 'speedbar-face "PragmataPro-7")
+;     (set-face-font 'speedbar-face "PragmataPro-7")
      (setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
      )
   (file-error (message "sr-speedbar not available")))
@@ -938,6 +977,15 @@ the form (display key-protocol hex-string)"
 ;;  to other preferences above.
 
 
+(set-background-color "black")
+(set-foreground-color "white")
+(set-cursor-color "white")
+(set-face-background 'region "midnight blue")
+(require 'package)
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                         ("marmalade" . "http://marmalade-repo.org/packages/")
+                         ("melpa" . "http://melpa.milkbox.net/packages/")))
+(package-initialize)
 
 
 ;;============================================================
@@ -957,6 +1005,31 @@ the form (display key-protocol hex-string)"
       (cscope-setup)
       )
   (file-error (message "xcscope not available.")))
+
+
+(require 'helm)
+(require 'helm-config)
+
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+(when (executable-find "curl")
+  (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t)
+
+(helm-mode 1)
 
 ;;============================================================
 ;; * KEYBINDINGS
@@ -1008,6 +1081,12 @@ the form (display key-protocol hex-string)"
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
 (global-set-key "\C-ct" 'org-time-stamp)
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 (global-set-key [pause] 'toggle-current-window-dedication)
 ; TODO: find module for highlighting the current column, and add it in
 ; a keystroke here.

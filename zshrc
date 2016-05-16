@@ -45,11 +45,13 @@ export PROJECTDIR=~
 export PROJECTGOOG=~
 export PATH=/ulg/bin:~/.cabal/bin:$PATH:~/config/git:~/Work/depot_tools
 export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
-
+export LD_LIBRARY_PATH=/usr/local/google/lib
 #export MANPATH=/usr/local/texlive/2011/texmf/doc/man:$MANPATH
 #export INFOPATH=/usr/local/texlive/2011/texmf/doc/info:$INFOPATH
 #export JAVA_HOME=/usr/local/buildtools/java/jdk
 
+# https://youtrack.jetbrains.com/issue/IDEA-78860
+export IBUS_ENABLE_SYNC_MODE=1
 # alias less='source-highlight --failsafe --infer-lang -f esc | less'
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
@@ -73,13 +75,13 @@ source $ZSH/oh-my-zsh.sh
 # Customize to your needs...
 # Shell commands
 alias ls='ls --color=auto -F'
-alias grpe='grep -n --color=auto'
-alias grep='grep -n --color=auto'
-alias fgrep='fgrep -n --color=auto'
-alias egrep='egrep -n --color=auto'
+alias grpe='grep --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
 alias nrep='grep --color=auto -n'
 alias enrep='egrep --color=auto -n'
-alias ack='ack-grep'
+alias ack='ack-grep --pager'
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
@@ -147,10 +149,15 @@ function fgrep () {
 
 RPROMPT="\$(cabal_sandbox_info) $RPROMPT"
 
-alias nix=. /home/lally/.nix-profile/etc/profile.d/nix.sh
+alias nix='. /home/lally/.nix-profile/etc/profile.d/nix.sh'
 
-# The next line updates PATH for the Google Cloud SDK.
-source '/home/lally/Work/google-cloud-sdk/path.zsh.inc'
+if [ -f /home/lally/Work/google-cloud-sdk/path.zsh.inc ]; then
+  # The next line updates PATH for the Google Cloud SDK.
+  source '/home/lally/Work/google-cloud-sdk/path.zsh.inc'
+fi
 
+if [ -f /home/lally/Work/google-cloud-sdk/completion.zsh.inc ]; then
 # The next line enables shell command completion for gcloud.
 source '/home/lally/Work/google-cloud-sdk/completion.zsh.inc'
+fi
+
