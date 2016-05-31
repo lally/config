@@ -5,3 +5,14 @@ couchdb.std*
 .cabal-sandbox
 .#*
 cabal.sandbox.config
+#       ../xmonad-safe-binary
+#       ../xmonad/UTF8_STRING.text
+xmonad/client_session_key.aes
+#       ../xmonad/rerun_xmonad.sh
+#       ../xmonad/run_xmonad.sh
+*.aux
+*.hp
+*.prof
+#       ../xmonad/super-xmonad.ps
+
+xmonad-safe-binary

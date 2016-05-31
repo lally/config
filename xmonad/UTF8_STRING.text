@@ -1,0 +1,336 @@
+                Inter-Client Exchange of Unicode Text
+
+                           4 January 2000
+
+                  Juliusz Chroboczek <jch@xfree86.org>
+
+                                DRAFT!
+
+
+Abstract: we propose a new property type and selection target
+UTF8_STRING that carries UTF-8 encoded Unicode text.  This document
+only deals with the definition of UTF8_STRING; any related API
+extensions shall be described in a future document.
+
+This document currently has no official status whatsoever; however, it
+is believed to be fairly stable.
+
+
+Introduction and background
+***************************
+
+Unicode [UNICODE2, UNICODE] is a coded character set with the ambition
+of being suitable for interchange of textual data in all known
+scripts, current and historical.  The Unicode character repertoire is
+indexed by unsigned integers known as codepoints.  By convention, we
+write U+89AB for the Unicode character with codepoint 89AB (hexadecimal).
+
+The Unicode character set is codepoint-for-codepoint identical to 
+ISO 10646 [ISO10646].  The main difference is that Unicode defines
+text-handling algorithms, while ISO 10646 doesn't.
+
+UTF-8 [UTF-8] is a technique for encoding Unicode text as a stream of
+eight-bit bytes.  The UTF-8 encoding enjoys the following desirable
+properties:
+
+* it is compatible with 7-bit ASCII [ASCII], in that mapping
+  arbitrary strings of ASCII characters encoded as eight-bit bytes to
+  UTF-8 doesn't require any conversion;
+* it is stateless: it is possible to start interpreting a UTF-8 string
+  at any point; and
+* conversion between UTF-8 and streams of 16- or 32-bit Unicode values
+  is computationally trivial.
+
+Together with the universality of Unicode, these properties make UTF-8
+the ideal interchange format for plain text.  In particular, UTF-8 may
+allow clients to seamlessly exchange selections [ICCCM] containing
+multilingual text in a locale-independent manner.
+
+The currently preferred X11 interchange format for multilingual text
+is Compound Text [CTEXT], which is a large subset of ISO 2022 [ISO2022].
+As such, it requires stateful parsing, and makes artificial
+distinctions between characters that are for all purposes identical
+but happen to belong to different character sets.
+
+This document proposes a new property type and selection target
+UTF8_STRING that carries UTF-8 encoded Unicode text.  This document
+only deals with the definition of UTF8_STRING; API extensions making
+the manipulation of UTF8_STRING more convenient shall be described in
+a future document, and are outside the scope of this document.
+
+
+Normative part
+**************
+
+This document proposes that the atom name UTF8_STRING should be
+registered with X.ORG.  The main uses of this atom will be property
+types and selection targets, although its use for other purposes is
+not excluded.
+
+If a property has type UTF8_STRING, it should carry eight-bit data
+(i.e. specify format 8).  It should be interpreted as a string encoded
+according to UTF-8, as defined by the Unicode standard, version 2.0 or
+any later version.  The data consists of a UTF-8 string only; in
+particular, it does not carry a signature and is not terminated with a
+null byte.
+
+Nothing more is implied about the data in a property of type
+UTF8_STRING.  In particular, it need not be in canonical form, and may
+contain any Unicode control characters, including, but not limited to,
+C0 and C1 control characters, paragraph and line breaks, directional
+marks, or Plane 14 language tags.
+
+If a selection request specifies target UTF8_STRING, the selection
+holder should make the selection available as a UTF-8 string, with
+type UTF8_STRING and format 8.
+
+In the interest of interoperability, the semantics of the selection
+target TEXT are *not* changed; in particular, replying with a
+selection type of type UTF8_STRING to a request specifying TEXT is
+explicitly *not* allowed.
+
+
+Guidelines for clients
+**********************
+
+Clients that use internally a text encoding that maps easily into a
+subset of Unicode are encouraged to use UTF8_STRING as their preferred
+interchange format.  Such applications are encouraged to obey the
+following guidelines.  None of these guidelines should be taken as
+normative.
+
+Combining characters
+--------------------
+
+It is expected that, in the short term, a number of applications will
+not be able to properly treat combining characters.  It is also
+expected that any application that can accept combining characters
+will be able to properly interpret precomposed forms.  For this
+reason, it is suggested that clients make characters available in
+their precomposed form whenever possible.
+
+Of course, clients are also encouraged to accept combining characters
+when it is practical to do so.
+
+Line and paragraph separators
+-----------------------------
+
+Traditionally, X clients have used the C0 character 0x0A LINE FEED for
+separating lines of text.  We suggest that this convention be carried
+over to the UTF8_STRING property type.
+
+A client that makes the selection available as UTF8_STRING should
+separate lines with a single U+000A LINE FEED character.  Paragraphs
+should be separated with a sequence of two or more occurrences of
+U+000A LINE FEED.
+
+Unicode introduces two new control characters for separating lines and
+paragraphs, U+2029 PARAGRAPH SEPARATOR (PS), and U+2028 LINE
+SEPARATOR.  We suggest that these characters should not be used by the
+selection provider.  However, we strongly encourage selection
+requestors to accept and interpret these two characters; a suggested
+strategy is to interpret U+2028 LINE SEPARATOR as a single U+000A LINE
+FEED and U+2029 PARAGRAPH SEPARATOR as a sequence of two occurrences
+of U+000A LINE FEED.
+
+Interaction of the Unicode BIDI algorithm with U+000A LINE FEED will
+need to be clarified.  For now, we suggest that a single U+000A LINE
+FEED should not cause the BIDI algorithm to be reset, while a sequence
+of two or more occurences of U+000A LINE FEED should do.
+
+
+C0 and C1 control characters
+----------------------------
+
+Unicode contains two ranges of control characters, known as C0 and C1,
+isomorphic to the ranges of control characters in the ISO 8859 series
+of encodings.
+
+With the exception of U+000A LINE FEED, the use of these characters by
+the selection provider should be avoided, as they do not have well
+defined semantics.  However, the selection requestor should be
+prepared to accept arbitrary control characters.  In particular,
+U+000C FORM FEED (FF) and U+000B HORIZONTAL TABULATION (HT) are likely
+to be used by applications running under X11, especially terminal
+emulators.  We suggest that they should be interpreted as follows.
+
+A U+000C FORM FEED (FF) causes a page break.  It should not cause the
+state of the BIDI algorithm to be reset.  Simply treating it as U+000A
+LINE FEED is a suitable strategy.
+
+A U+000B HORIZONTAL TABULATION (HT) should be treated as an
+application-dependent amount of linear whitespace.  Treating it just
+like U+0020 SPACE is a reasonable strategy.
+
+Any other C0 or C1 control characters should probably be simply
+discarded by the selection requestor.
+
+
+Guidelines for the selection owner
+----------------------------------
+
+A client, known as the selection owner, wishing to make a selection
+available in textual form, should:
+
+1. Respond to a conversion request of type TARGETS with (at least) the
+atoms TEXT, STRING, UTF8_STRING, and possibly COMPOUND_TEXT.
+
+2. Respond to a conversion request with target UTF8_STRING with a
+UTF-8 encoded string with no initial signature and no terminating NULL
+byte stored in a property of type UTF8_STRING.  In order to maximise
+interoperability, this string should preferably be in precomposed
+form, but clients are free to make arbitrary Unicode strings available
+when conversion to precomposed form is not desirable.  Producing such
+a property involves generating suitable Unicode control characters,
+such as U+000A LINE FEED, and possibly direction marks and Plane 14
+language tags.
+
+3. Respond to a conversion request with target STRING by coercing the
+selection to ISO 8859-1, and presenting the result in a property of
+type STRING.  Characters that do not map to ISO 8859-1 should be
+replaced in an application specific way, either by remapping to
+similar ISO 8859-1 characters (for example, mapping Unicode quotation
+marks to ASCII quotation marks), or replaced by an easy to spot ASCII
+character such as `?' or `#'.
+
+4. Optionally respond to a conversion request with target
+COMPOUND_TEXT with an application- and locale-specific conversion of
+the data into Compound Text [CTEXT].  The exact semantics of this
+conversion are not described in this document.
+
+5. Respond to a conversion request with the polymorphic target TEXT by
+checking whether the selected text can be represented exactly as an
+ISO 8859-1 string.  If this is the case, the selection owner should
+proceed as in point 3; otherwise, proceed as in point 4.
+
+
+Guidelines for the requestor
+----------------------------
+
+A client, known as the requestor, wishing to use a selection that may
+be available in textual form, should:
+
+1. Make a conversion request with target TARGETS, and check for the
+availability of the targets UTF8_STRING, STRING, and optionally
+COMPOUND_TEXT and TEXT.
+
+2. If the target UTF8_STRING was found, the requestor should issue a
+conversion request with target UTF8_STRING.  If this conversion
+succeeds, the requestor should process the resulting UTF-8 encoded
+string in an application-specific manner.  The string should be
+interpreted as having no signature or terminating NULL byte.  In
+particular, an initial U+FEFF NON BREAKING ZERO WIDTH SPACE or a final
+U+0000 NULL should not be discarded.
+
+The requestor should deal robustly with incorrect or overlong UTF-8
+sequences.  It should be able to interpret or discard arbitrary
+Unicode control characters, including U+000A LINE FEED, direction
+marks, as well as Plane 14 language tags.
+
+3. If the target UTF8_STRING was not found, or the conversions in step
+2 above failed, and if the target COMPOUND_TEXT was found and the
+requestor is willing to perform a conversion from COMPOUND_TEXT into
+its internal format, the requestor should issue a conversion request
+with target COMPOUND_TEXT.  If the selection conversion succeeds, the
+requestor should then proceed in making a best-effort conversion from
+the COMPOUND_TEXT format into its internal format.
+
+While this step is optional, clients are strongly encouraged to at
+least attempt it, as COMPOUND_TEXT is currently the only widely
+supported selection target and property type that supports exchange of
+text beyond the ISO 8859-1 repertoire.
+
+4. If neither step 2 nor step 3 above were successful, and the target
+STRING was found, the client should issue a conversion request of type
+STRING.  The resulting property should have type STRING and contain an
+ISO 8859-1 encoded string.  Any control characters in this string
+should be interpreted in an application-specific manner; in
+particular, 0x0A LINE FEED should be interpreted as a line break.
+
+A client may also chose to make a conversion selection with the
+polymorphic target TEXT, and should then be prepared to receive a
+property with any text encoding, including, but not limited to, STRING
+and COMPOUND_TEXT.
+
+Sample implementation
+---------------------
+
+A sample implementation of the guidelines above has been integrated
+with Thomas Dickey's `XTerm', patchlevel 108 and later.  It is
+available from
+
+  http://www.clark.net/pub/dickey/
+
+A version of this implementation of `XTerm' is available with versions
+3.9.15 and later of XFree86.  XFree86 is available from
+
+  http://www.xfree86.org
+
+
+Current practice
+****************
+
+None of the clients available to the author behave as proposed above.
+A number of clients make UTF-8 strings available as property type
+STRING (for target TEXT, STRING, or both), which violates the ICCCM
+conventions [ICCCM].  Some clients try to convert Unicode strings into
+compound text and make them available as property type COMPOUND_TEXT,
+which follows the ICCCM, but requires a complex, stateful conversion
+which is not one-to-one, and is likely to be reversed by the selection
+requestor.  Other clients have been found to make UTF-8 encoded
+strings available in a locale-dependent property type (such as
+en_US.UTF-8), which makes selection transfer between clients running
+in different locales very difficult or impossible.
+
+
+Other formats related to Unicode
+********************************
+
+In addition to UTF-8, both Unicode and ISO 10646 define a 16-bit
+format called UTF-16 and a 32-bit format called UTF-32.  ISO 10646
+furthermore defines a 32-bit format called UCS-4.
+
+Conversion between UTF-8 and these other formats is computationally
+trivial.  When restricted to the BMP (the set of Unicode characters
+with codepoints less than 2^16), UTF-8 carries at most a 50% overhead
+with respect to UTF-16, and is always more compact than UTF-32 and
+UCS-4.
+
+For these reasons, this document does not suggest defining mechanisms
+for exchanging data encoded as UTF-16, UTF-32 or UCS-4, as creating
+such mechanisms would only cause confusion and interoperability
+problems, while bringing no visible benefits to users.  It seems
+highly unlikely that such mechanisms will be needed in the future.
+
+
+References
+**********
+
+[ARBITRARY] Arbitrary Character Sets.  John McCarthy.  RFC 373, July
+           1972.
+
+[ASCII]    ISO/IEC 646:1991.  Information technology -- ISO 7-bit coded
+	   character set for information interchange
+
+[CTEXT]    Compound Text Encoding, version 1.1.  Robert W Scheifler.
+
+[ICCCM]    David Rosenthal and Stuart W. Marks.  Inter-Client
+           Communication Conventions Manual, Version 2.0.
+
+[ISO10646] ISO/IEC 10646-1:1993. Information technology -- Universal
+           Multiple-Octet Coded Character Set (UCS) -- Part 1:
+           Architecture and Basic Multilingual Plane.
+
+[ISO2022]  ISO/IEC 2022:1994 Information technology -- Character code
+           structure and extension techniques
+
+[UTF-8]    F. Yergeau.  UTF-8, a transformation format of ISO 10646.
+           RFC 2279, January 1998. 
+
+[UNICODE2] The Unicode Consortium.  The Unicode Standard -- Version
+           2.0.  Addison-Wesley, 1996.  Supplemented by 
+           The Unicode Standard -- Version 2.1, available from 
+           http://www.unicode.org/unicode/reports/tr8.html
+
+[UNICODE]  The Unicode Consortium.  The Unicode Standard -- Version
+           3.0.  Addison-Wesley, 2000.

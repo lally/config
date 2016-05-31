@@ -1,4 +1,10 @@
 ;; -*-  mode: Lisp; eval: (orgstruct++-mode); eval: (setq orgstruct-heading-prefix-regexp ";; ");  -*-
+;;
+;; MAJOR TODO:
+;;  - [ ] Break this emacs into separate files, emacs.d, anyone?
+;;  - [ ] Then select modules based on host-specific config.
+;;
+
 ;; Load up any private variables first
 (if (file-exists-p "~/.emacs-priv-vars")
     (load "~/.emacs-priv-vars"))
@@ -150,7 +156,7 @@ the form (display key-protocol hex-string)"
 ;(require 'git-gutter-fringe+)
 
 
-;(custom-set-faces
+(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
@@ -584,7 +590,7 @@ the form (display key-protocol hex-string)"
  ;; If there is more than one, they won't work right.
  '(erc-modules
    (quote
-    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands notifications readonly ring scrolltobottom services smiley stamp track))))
+    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands notifications readonly ring scrolltobottom services smiley stamp track)))
  '(column-number-mode t)
  '(custom-safe-themes
    (quote
@@ -883,8 +889,6 @@ the form (display key-protocol hex-string)"
 (require 'helm-config)
 
 
-
-
 ;; ** HELM
 (require 'helm)
 (require 'helm-config)
@@ -907,9 +911,14 @@ the form (display key-protocol hex-string)"
       helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
       helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
       helm-ff-file-name-history-use-recentf t)
+
+(setq helm-ls-git-grep-command
+      "git grep -n%cH --color=always --full-name -e %p %f")
+
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 (global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-x C-g") 'helm-git-grep)
 (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
 
 (setq helm-buffers-fuzzy-matching t
@@ -965,6 +974,8 @@ the form (display key-protocol hex-string)"
 (setq browse-url-browser-function 'w3m-browse-url)
 
 (projectile-global-mode)
+(setq projectile-completion-system 'helm)
+(helm-projectile-on)
 
 
 ;;============================================================
