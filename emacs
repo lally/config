@@ -882,13 +882,6 @@ the form (display key-protocol hex-string)"
 (defun filename-of-path (n)
   (last (split-string n "/" 't)))
 
-;;============================================================
-;; helm mode
-;;============================================================
-(require 'helm)
-(require 'helm-config)
-
-
 ;; ** HELM
 (require 'helm)
 (require 'helm-config)
@@ -947,29 +940,33 @@ the form (display key-protocol hex-string)"
 (require 'w3m)
 (setq w3m-home-page "http://emacs-w3m.namazu.org/info/")
 (require 'helm-dash)
-(setq helm-dash-common-docsets '("C" "C++" "JavaScript" "Bash" "Android"))
+;; TODO: determine a better browser story than w3m.
+;(setq helm-dash-common-docsets '("C++"))
 (setq browse-url-browser-function 'w3m-browse-url)
+
+
 
 ;; ** POWERLINE
 ;(require 'powerline)
 ;(powerline-default-theme)
 ;; ** Smart Mode Line
+(require 'dirtree)
+
 ; Screw powerline, go smart-mode-line, it's more customizable, apparently.
 (require 'smart-mode-line)
 (setq sml/theme 'dark)
 (sml/setup)
 
 ;; ** sr-speedbar
-(condition-case nil
-   (progn
-     (require 'sr-speedbar)
-     (setq speedbar-use-images nil)
-     (make-face 'speedbar-face)
-;     (set-face-font 'speedbar-face "PragmataPro-7")
-     (setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
-     )
-  (file-error (message "sr-speedbar not available")))
-
+;; (condition-case nil
+;;    (progn
+;;      (require 'sr-speedbar)
+;;      (setq speedbar-use-images nil)
+;;      (make-face 'speedbar-face)
+;; ;     (set-face-font 'speedbar-face "PragmataPro-7")
+;;      (setq speedbar-mode-hook '(lambda () (buffer-face-set 'speedbar-face)))
+;;      )
+;;   (file-error (message "sr-speedbar not available")))
 (require 'w3m)
 (setq browse-url-browser-function 'w3m-browse-url)
 
