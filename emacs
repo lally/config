@@ -116,8 +116,8 @@ the form (display key-protocol hex-string)"
     (add-to-list 'load-path "/usr/local/google/share/emacs/site-lisp"))
 ;; Stuff in config/libs/*
 (add-to-list 'load-path "~/config/libs/site-lisp")
-(add-to-list 'load-path "~/config/libs/site-lisp/emacs-ctable")
-(add-to-list 'load-path "~/config/libs/site-lisp/g-client")
+;(add-to-list 'load-path "~/config/libs/site-lisp/emacs-ctable")
+;(add-to-list 'load-path "~/config/libs/site-lisp/g-client")
 (require 'auto-install)
 
 ;; Package-Manager stuff, Emacs 24+ only
@@ -128,7 +128,7 @@ the form (display key-protocol hex-string)"
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (package-initialize)
-(edit-server-start)
+; (edit-server-start)
 
 (require 'smart-mode-line)
 (setq sml/no-confirm-load-theme t)
@@ -149,13 +149,12 @@ the form (display key-protocol hex-string)"
 ;(require 'git-gutter-fringe+)
 
 
-;(custom-set-faces
+(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-; '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 111 :width normal :family "Anka/Coder Narrow")))))
- '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 68 :width normal :foundry "unknown" :family "PragmataPro"))))
+ '(default ((t (:inherit nil :stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "adobe" :family "Source Code Pro"))))
  '(ebrowse-root-class ((((min-colors 88)) (:foreground "white" :weight bold))) t)
  '(mode-line ((t (:background "#212931" :foreground "#eeeeec" :box (:line-width -1 :style released-button) :height 1.0 :family "PragmataPro"))))
  '(sml/filename ((t (:inherit mode-line-buffer-id)))))
@@ -171,10 +170,10 @@ the form (display key-protocol hex-string)"
 (setq gdb-create-source-file-list nil)
 
 ;; Org and related packages.
-(require 'ctable)
+;(require 'ctable)
 (require 'column-marker)
 (require 'fic-mode)
-(require 'org-manage)
+;(require 'org-manage)
 (require 'org-install)
 (require 'org-habit)
 (require 'org-protocol)
@@ -585,17 +584,17 @@ the form (display key-protocol hex-string)"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(erc-modules
-   (quote
-    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands notifications readonly ring scrolltobottom services smiley stamp track))))
  '(column-number-mode t)
+ '(custom-safe-themes
+   (quote
+    ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "91fba9a99f7b64390e1f56319c3dbbaed22de1b9676b3c73d935bf62277b799c" "db9feb330fd7cb170b01b8c3c6ecdc5179fc321f1a4824da6c53609b033b2810" "09669536b4a71f409e7e2fd56609cd7f0dff2850d4cbfb43916cc1843c463b80" "75c0b9f9f90d95ac03f8647c75a91ec68437c12ff598e2abb22418cd4b255af0" "e033c4abd259afac2475abd9545f2099a567eb0e5ec4d1ed13567a77c1919f8f" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "cdfb22711f64d0e665f40b2607879fcf2607764b2b70d672ddaa26d2da13049f" "f21caace402180ab3dc5157d2bb843c4daafbe64aadc362c9f4558ac17ce43a2" "aed73c6d0afcf2232bb25ed2d872c7a1c4f1bda6759f84afc24de6a1aec93da8" default)))
  '(display-time-mode t)
  '(ecb-options-version "2.40")
- '(erc-modules (quote (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands readonly replace ring stamp track)))
- '(custom-safe-themes (quote ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "91fba9a99f7b64390e1f56319c3dbbaed22de1b9676b3c73d935bf62277b799c" "db9feb330fd7cb170b01b8c3c6ecdc5179fc321f1a4824da6c53609b033b2810" "09669536b4a71f409e7e2fd56609cd7f0dff2850d4cbfb43916cc1843c463b80" "75c0b9f9f90d95ac03f8647c75a91ec68437c12ff598e2abb22418cd4b255af0" "e033c4abd259afac2475abd9545f2099a567eb0e5ec4d1ed13567a77c1919f8f" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "cdfb22711f64d0e665f40b2607879fcf2607764b2b70d672ddaa26d2da13049f" "f21caace402180ab3dc5157d2bb843c4daafbe64aadc362c9f4558ac17ce43a2" "aed73c6d0afcf2232bb25ed2d872c7a1c4f1bda6759f84afc24de6a1aec93da8" default)))
- '(display-time-mode t)
- '(ede-project-directories (quote ("/usr/local/google/home/lally")))
+; '(ede-project-directories (quote ("/usr/local/google/home/lally")))
  '(epg-gpg-program "/usr/bin/gpg2")
+ '(erc-modules
+   (quote
+    (autojoin button completion fill irccontrols list log match menu move-to-prompt netsplit networks noncommands readonly replace ring stamp track)))
  '(gdb-find-source-frame t)
  '(gdb-many-windows t)
  '(gdb-show-changed-values t)
@@ -608,28 +607,58 @@ the form (display key-protocol hex-string)"
  '(ido-default-buffer-method (quote selected-window))
  '(ido-default-file-method (quote selected-window))
  '(inhibit-startup-screen t)
- '(org-agenda-files (quote ("~/org/project/uproxy/tls.org" "~/org/capture.org" "~/org/from-mobile.org" "~/org/perf.org" "~/org/personal.org" "~/org/plan-scratchpad.org" "~/org/productivity.org" "~/org/speculation.org" "~/org/unsorted.org" "~/org/project/uproxy/china.org" "~/org/project/uproxy/code.org" "~/org/project/uproxy/design-manual.org" "~/org/project/uproxy/docker.org" "~/org/project/uproxy/ignored-tickets.org" "~/org/project/uproxy/sctp.org" "~/org/project/uproxy/security.org" "~/org/project/uproxy/toplevel.org" "~/org/project/uproxy/uproxy.org" "~/org/project/uproxy/webrtc.org")))
- '(org-capture-templates (quote (("t" "Todo" entry (file+headline "~/org/unsorted.org" "Tasks") "* TODO %?
+ '(org-agenda-custom-commands
+   (quote
+    (("n" "Agenda and all TODO's"
+      ((agenda "" nil)
+       (alltodo "" nil))
+      nil)
+     ("x" "@CURRENT_WORK" tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK" nil)
+     ("d" "Dashboard"
+      ((tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK")
+       (tags-todo "@WORK_CTX|@TODO"))))))
+ '(org-agenda-files
+   (quote
+    ("~/org/project/uproxy/tls.org" "~/org/capture.org" "~/org/from-mobile.org" "~/org/perf.org" "~/org/personal.org" "~/org/plan-scratchpad.org" "~/org/productivity.org" "~/org/speculation.org" "~/org/unsorted.org" "~/org/project/uproxy/china.org" "~/org/project/uproxy/code.org" "~/org/project/uproxy/design-manual.org" "~/org/project/uproxy/docker.org" "~/org/project/uproxy/ignored-tickets.org" "~/org/project/uproxy/sctp.org" "~/org/project/uproxy/security.org" "~/org/project/uproxy/toplevel.org" "~/org/project/uproxy/uproxy.org" "~/org/project/uproxy/webrtc.org")))
+ '(org-capture-templates
+   (quote
+    (("t" "Todo" entry
+      (file+headline "~/org/unsorted.org" "Tasks")
+      "* TODO %?
   %i
-  %a") ("i" "Idea" entry (file+headline "~/org/unsorted.org" "Ideas") "* %T Idea") ("p" "Planning Journal Entry" entry (file "~/org/plan-scratchpad.org") "* %T Plan") ("m" "Meta (Productivity) Entry" entry (file "~/org/productivity.org") "* %T Meta") ("l" "Link" entry (file+olp "~/org/intel/unsorted.org" "Web Links") "* %a
+  %a")
+     ("i" "Idea" entry
+      (file+headline "~/org/unsorted.org" "Ideas")
+      "* %T Idea")
+     ("p" "Planning Journal Entry" entry
+      (file "~/org/plan-scratchpad.org")
+      "* %T Plan")
+     ("m" "Meta (Productivity) Entry" entry
+      (file "~/org/productivity.org")
+      "* %T Meta")
+     ("l" "Link" entry
+      (file+olp "~/org/intel/unsorted.org" "Web Links")
+      "* %a
  %?
  %i"))) t)
  '(org-enforce-todo-dependencies t)
- '(org-agenda-custom-commands (quote (("n" "Agenda and all TODO's" ((agenda "" nil) (alltodo "" nil)) nil) ("x" "@CURRENT_WORK" tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK" nil) ("d" "Dashboard" ((tags-todo "@CURRENT_WORK|@READY_WORK|@BLOCKED_WORK") (tags-todo "@WORK_CTX|@TODO"))))))
- '(org-modules (quote (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-w3m org-mouse org-git-link)))
+ '(org-modules
+   (quote
+    (org-bbdb org-bibtex org-crypt org-ctags org-docview org-id org-jsinfo org-habit org-inlinetask org-irc org-mouse org-git-link)))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 3))))
- '(safe-local-variable-values (quote ((haskell-process-use-ghci . t) (haskell-indent-spaces . 4) (org-use-property-inheritance . t))))
- '(show-trailing-whitespace t)
- '(tss-jump-to-definition-key "C->")
- '(tss-popup-help-key "C-:")
  '(org-tags-exclude-from-inheritance (quote ("@CURRENT_WORK" "@READY_WORK" "@BLOCKED_WORK")))
- '(safe-local-variable-values (quote ((eval setq orgstruct-heading-prefix-regexp ";; ") (org-use-property-inheritance . t))))
+ '(safe-local-variable-values
+   (quote
+    ((eval setq orgstruct-heading-prefix-regexp ";; ")
+     (org-use-property-inheritance . t))))
  '(semantic-mode t)
  '(send-mail-function (quote smtpmail-send-it))
  '(show-paren-mode t)
+ '(show-trailing-whitespace t)
  '(sml/theme (quote dark))
  '(tool-bar-mode nil)
- '(transient-mark-mode (quote (only . t)))
+ '(tss-jump-to-definition-key "C->")
+ '(tss-popup-help-key "C-:")
  '(typescript-indent-level 2))
 
 (smart-mode-line-enable t)
@@ -714,6 +743,7 @@ the form (display key-protocol hex-string)"
 ;;                   "TOSUBMIT(s)" "DONE(d)")))
 
 (set-variable 'org-hide-leading-stars t)
+(set-variable 'org-ditaa-jar-path "~/.nix-profile/bin/ditaa") ;(shell-command-to-string " ditaa"))
 (setq org-bullets-bullet-list '("◉" "+" "★" "►" "✦" "◇"))
 ;; ** ORG CAPTURE
 (setq org-default-notes-file "~/org/unsorted.org")
@@ -794,7 +824,7 @@ the form (display key-protocol hex-string)"
       (expand-file-name "~/bin/plantuml.jar"))
 
 (setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program "google-chrome")
+      browse-url-generic-program "chromium") ; "google-chrome")
 
 ;; ** ORG EDIT HOOK
 ;; -------------
@@ -894,11 +924,11 @@ the form (display key-protocol hex-string)"
 
 ;; helm-dash
 
-(require 'w3m)
-(setq w3m-home-page "http://emacs-w3m.namazu.org/info/")
+;(require 'w3m)
+;(setq w3m-home-page "http://emacs-w3m.namazu.org/info/")
 (require 'helm-dash)
 (setq helm-dash-common-docsets '("C" "C++" "JavaScript" "Bash" "Android"))
-(setq browse-url-browser-function 'w3m-browse-url)
+;(setq browse-url-browser-function 'w3m-browse-url)
 
 ;; ** POWERLINE
 ;(require 'powerline)
@@ -920,8 +950,8 @@ the form (display key-protocol hex-string)"
      )
   (file-error (message "sr-speedbar not available")))
 
-(require 'w3m)
-(setq browse-url-browser-function 'w3m-browse-url)
+;(require 'w3m)
+;(setq browse-url-browser-function 'w3m-browse-url)
 
 (projectile-global-mode)
 
@@ -955,8 +985,12 @@ the form (display key-protocol hex-string)"
 (require 'git-gutter)
 
 ;; Chrome support
-(require 'edit-server)
-(edit-server-start)
+(condition-case nil
+    (progn
+      (require 'edit-server)
+      (edit-server-start)
+      )
+  (file-error (message "edit-server not available.")))
 ;; ** cscope
 (condition-case nil
     (progn
@@ -1040,12 +1074,7 @@ the form (display key-protocol hex-string)"
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
 (global-set-key "\C-ct" 'org-time-stamp)
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+
 (global-set-key [pause] 'toggle-current-window-dedication)
 ; TODO: find module for highlighting the current column, and add it in
 ; a keystroke here.

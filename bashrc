@@ -144,3 +144,4 @@ function xcat () {
 alias vim='emacsclient -t'
 
 export GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt
+export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
